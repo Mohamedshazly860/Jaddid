@@ -1,0 +1,82 @@
+services:
+
+  # ─── PostgreSQL Database ───────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: jaddid_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-jaddid_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-jaddid_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: jaddid_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Django Backend ───────────────────────────────────────────────
+  backend:
+    build:
+      context: ./jaddid-backend
+      dockerfile: Dockerfile
+    container_name: jaddid_backend
+    restart: unless-stopped
+    env_file:
+      - ./jaddid-backend/.env
+    environment:
+      DB_HOST: postgres
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./jaddid-backend:/app
+      - media_files:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+
+  # ─── React Frontend (Vite Dev Server) ────────────────────────────
+  frontend:
+    build:
+      context: ./Jaddid-frontend
+      dockerfile: Dockerfile
+    container_name: jaddid_frontend
+    restart: unless-stopped
+    env_file:
+      - ./Jaddid-frontend/.env
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./Jaddid-frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  media_files:

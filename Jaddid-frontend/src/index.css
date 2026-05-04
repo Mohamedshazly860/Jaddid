@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Jaddid Brand Colors - Balanced Fresh Green */
+    --white: 0 0% 100%;
+    --cream: 47 100% 90%; /* #FFF1CA */
+    --orange: 40 100% 57%; /* #FFB823 */
+    --sage: 100 30% 55%; /* #85A66B - Balanced fresh green */
+    --forest: 135 30% 40%; /* #4D7A49 - Darker forest green for better contrast */
+    --forest-dark: 135 35% 28%; /* Even darker for backgrounds */
+    
+    /* Semantic colors mapped to brand */
+    --green-primary: 100 30% 55%; /* sage - balanced green */
+    --green-light: 100 35% 65%; /* lighter */
+    --green-dark: 135 30% 40%; /* forest - darker for contrast */
+    --green-pale: 100 35% 92%; /* very light */
+    --yellow-accent: 40 100% 57%; /* orange */
+    --yellow-light: 47 100% 90%; /* cream */
+    --gray-soft: 0 0% 96%;
+    --gray-medium: 0 0% 55%;
+    --gray-dark: 0 0% 20%;
+    
+    --background: 0 0% 100%;
+    --foreground: 135 30% 20%; /* Darker for contrast */
+
+    --card: 0 0% 100%;
+    --card-foreground: 135 25% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 135 25% 25%;
+
+    --primary: 135 30% 40%; /* darker forest green for contrast */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 100% 57%; /* orange */
+    --secondary-foreground: 135 30% 18%;
+
+    --muted: 47 100% 90%; /* cream */
+    --muted-foreground: 100 22% 38%; /* Medium for good contrast */
+
+    --accent: 100 30% 55%; /* balanced sage */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 100 25% 85%; /* Light green border */
+    --input: 100 25% 85%; /* Light green input */
+    --ring: 135 25% 45%; /* Medium forest ring */
+
+    --radius: 1rem;
+
+    --font-primary: 'Space Grotesk', sans-serif;
+    --font-arabic: 'Cairo', sans-serif;
+  }
+
+  .dark {
+    --background: 135 30% 8%;
+    --foreground: 47 100% 95%;
+
+    --card: 135 25% 12%;
+    --card-foreground: 47 100% 95%;
+
+    --popover: 135 25% 12%;
+    --popover-foreground: 47 100% 95%;
+
+    --primary: 100 30% 55%; /* balanced sage */
+    --primary-foreground: 135 30% 10%;
+
+    --secondary: 40 100% 57%;
+    --secondary-foreground: 135 30% 10%;
+
+    --muted: 135 20% 18%;
+    --muted-foreground: 100 28% 65%; /* balanced */
+
+    --accent: 135 25% 40%; /* medium for dark mode */
+    --accent-foreground: 0 0% 100%;
+
+    --border: 135 20% 20%;
+    --input: 135 20% 20%;
+    --ring: 100 30% 55%; /* balanced sage */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-primary);
+  }
+
+  body[dir="rtl"] {
+    font-family: var(--font-arabic);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--forest)) 0%, hsl(var(--sage)) 100%);
+  }
+
+  .text-gradient-accent {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--orange)) 0%, hsl(var(--sage)) 100%);
+  }
+
+  .bg-gradient-subtle {
+    background: linear-gradient(180deg, hsl(var(--white)) 0%, hsl(var(--cream) / 0.5) 100%);
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--white)) 0%, hsl(var(--cream) / 0.3) 100%);
+  }
+
+  .bg-gradient-dark {
+    background: linear-gradient(180deg, hsl(var(--forest)) 0%, hsl(var(--sage)) 100%);
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg;
+    @apply transition-all duration-300 hover:scale-105;
+    box-shadow: 0 8px 30px hsl(var(--forest) / 0.25);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 12px 40px hsl(var(--forest) / 0.35);
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground px-8 py-4 rounded-full font-semibold text-lg;
+    @apply transition-all duration-300 hover:scale-105;
+    box-shadow: 0 8px 30px hsl(var(--orange) / 0.3);
+  }
+
+  .card-hover {
+    @apply transition-all duration-500;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px hsl(var(--forest) / 0.1);
+  }
+
+  .floating {
+    animation: floating 6s ease-in-out infinite;
+  }
+
+  .floating-delay {
+    animation: floating 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }

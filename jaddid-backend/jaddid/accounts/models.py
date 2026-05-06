@@ -10,7 +10,6 @@ from .managers import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
     """Uses email instead of username for authentication"""
-    #Role_Choices
     Individual="Individual"
     Factory="Factory"
     Company="Company"
@@ -23,7 +22,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         (Admin, "Admin")
     ]
 
-    #Language_choices
     English="en"
     Arabic="ar"
 

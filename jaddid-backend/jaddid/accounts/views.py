@@ -1,5 +1,3 @@
-from functools import partial
-import stat
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,parser_classes
@@ -10,8 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import authenticate
 from django.db.models import Q
-from yaml import serialize
-
+from rest_framework.pagination import PageNumberPagination
 from accounts.admin import UserAdmin
 from .models import User, Profile
 from .serializers import (
@@ -25,9 +22,46 @@ from .serializers import (
     UserListSerializer,
 )
 from accounts import serializers
+from .signals import user_logged_out
+import redis
+import json
+import os
 
-# Create your views here.
-# @csrf_exempt
+# Helper function to get Redis connection
+def get_redis_connection():
+    """Get Redis connection with fallback options"""
+    try:
+        redis_url = os.getenv("REDIS_URL")
+        if redis_url:
+            return redis.from_url(redis_url, decode_responses=True)
+        else:
+            redis_host = os.getenv("REDIS_HOST", "localhost")
+            redis_port = int(os.getenv("REDIS_PORT", 6379))
+            return redis.Redis(host=redis_host, port=redis_port, db=0, decode_responses=True)
+    except Exception as e:
+        print(f"Redis connection error: {e}")
+        return None
+
+
+# Helper function to get cached profile
+def get_cached_profile(user_id):
+    """Get user profile from Redis cache"""
+    try:
+        r = get_redis_connection()
+        if not r:
+            return None
+        
+        cache_key = f"user:{user_id}"
+        cached_data = r.get(cache_key)
+        
+        if cached_data:
+            return json.loads(cached_data)
+        return None
+    except Exception as e:
+        print(f"Error retrieving cache: {e}")
+        return None
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
@@ -74,6 +108,11 @@ def login_user(request):
     
     refresh = RefreshToken.for_user(user)
     user_data = UserSerializer(user).data
+    """
+    profiledata = profile serializer(user.profile).data
+    r = 
+    """
+
 
     return Response({
         'user':user_data,
@@ -90,6 +129,7 @@ def login_user(request):
 def logout_user(request):
     """User Logout"""
     try:
+        user_id = request.user.id
         refresh_token=request.data.get('refresh')
         if not refresh_token:
             return Response({
@@ -98,6 +138,9 @@ def logout_user(request):
         
         token = RefreshToken(refresh_token)
         token.blacklist()
+        
+        # Trigger signal to delete user profile from Redis cache
+        user_logged_out.send(sender=request, user_id=user_id)
 
         return Response({
             'message':'Logout Successful'
@@ -135,17 +178,49 @@ def refresh_token(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_current_user(request):
-    """get current user details"""
+    """get current user details - uses Redis cache for faster retrieval"""
     user = request.user
-    # Serialize user and profile together
-    user_data = UserSerializer(user).data
-    profile = getattr(user, 'profile', None)
-    profile_data = ProfileSerializer(profile).data if profile is not None else None
-
-    return Response({
-        'user': user_data,
-        'profile': profile_data
-    }, status=status.HTTP_200_OK)
+    
+    try:
+        user_id = str(user.id)
+        
+        # Try to get from Redis cache first
+        cached_profile = get_cached_profile(user_id)
+        if cached_profile:
+            # Return cached data in the same format as the serializer
+            return Response({
+                'id': cached_profile['user_id'],
+                'email': cached_profile['email'],
+                'first_name': cached_profile['first_name'],
+                'last_name': cached_profile['last_name'],
+                'full_name': cached_profile['full_name'],
+                'role': cached_profile['role'],
+                'is_verified': cached_profile['is_verified'],
+                'is_active': cached_profile['is_active'],
+                'date_joined': cached_profile['date_joined'],
+                'profile': {
+                    'id': cached_profile.get('profile_id'),
+                    'phone': cached_profile['phone'],
+                    'address': cached_profile['address'],
+                    'bio': cached_profile['bio'],
+                    'profile_image': cached_profile['profile_image'],
+                    'average_rating': cached_profile['average_rating'],
+                    'review_count': cached_profile['review_count'],
+                }
+            }, status=status.HTTP_200_OK)
+    except Exception as cache_err:
+        print(f"Error getting cached profile: {cache_err}")
+        # Continue to database if cache fails
+    
+    # If not in cache or cache error, fetch from database
+    try:
+        user_data = UserSerializer(user).data
+        return Response(user_data, status=status.HTTP_200_OK)
+    except Exception as db_err:
+        print(f"Error serializing user: {db_err}")
+        return Response({
+            'error': 'Failed to load user data'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -225,7 +300,6 @@ def list_users(request):
         )
 
     #Pagination
-    from rest_framework.pagination import PageNumberPagination
     paginator = PageNumberPagination()
     paginator.page_size = request.query_params.get('page_size', 20)
     result_page  = paginator.paginate_queryset(queryset, request)

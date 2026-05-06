@@ -1,6 +1,5 @@
 // User & Profile API Service
 import api from "./api";
-import marketplaceService from "./marketplaceService";
 
 const tryEndpoints = async (endpoints, config) => {
   for (const ep of endpoints) {
@@ -21,6 +20,39 @@ const userService = {
   getCurrentUser: async () => {
     // direct endpoint for current user
     return api.get("/accounts/me/");
+  },
+
+  // Fetch both user and profile data in parallel for faster loading
+  getCurrentUserWithProfile: async () => {
+    try {
+      // Fetch both endpoints in parallel
+      const [userRes, profileRes] = await Promise.all([
+        api.get("/accounts/me/"),
+        api.get("/accounts/profile/").catch(err => {
+          // Profile endpoint might fail, but user data is enough
+          console.warn("Profile endpoint failed, using user data only:", err);
+          return null;
+        })
+      ]);
+
+      // Merge data: user already has nested profile, but also add direct profile response
+      const userData = userRes.data;
+      
+      if (profileRes && profileRes.data) {
+        // Merge profile data
+        if (userData.profile) {
+          userData.profile = { ...userData.profile, ...profileRes.data };
+        } else {
+          userData.profile = profileRes.data;
+        }
+      }
+
+      return { data: userData };
+    } catch (error) {
+      // Fallback to just user data
+      console.error("Failed to fetch user data:", error);
+      throw error;
+    }
   },
 
   getUserById: async (id) => {
@@ -64,11 +96,6 @@ const userService = {
     return api.patch(`/accounts/users/${id}/`, data);
   },
 
-  // Full replace (PUT) variants
-  updateUserPut: (id, data) => {
-    return api.put(`/accounts/users/${id}/`, data);
-  },
-
   updateCurrentUser: (data) => {
     // backend provides a dedicated endpoint for partial updates
     return api.patch("/accounts/me/basic/", data);
@@ -82,46 +109,7 @@ const userService = {
   deleteCurrentUser: () => api.delete("/accounts/me/delete/"),
 
   // Profile-related wrappers
-  getProfile: async (id) => {
-    return userService.getUserById(id);
-  },
-
   getUserProfile: (userId) => api.get(`/accounts/users/${userId}/`),
-
-  // Fetch products/listings/reviews belonging to a user using query params as a fallback
-  getUserProducts: async (userId, params = {}) => {
-    if (!userId) return Promise.resolve({ data: [] });
-    const keys = ["owner", "user", "seller", "owner_id", "user_id"];
-    for (const key of keys) {
-      try {
-        const res = await api.get("/marketplace/products/", {
-          params: { ...params, [key]: userId },
-        });
-        // return first successful response
-        if (res && (Array.isArray(res.data) ? true : res.data)) return res;
-      } catch (err) {
-        // try next key
-      }
-    }
-    // fallback to unfiltered products (empty)
-    return Promise.resolve({ data: [] });
-  },
-
-  getUserMaterialListings: async (userId, params = {}) => {
-    if (!userId) return Promise.resolve({ data: [] });
-    const keys = ["owner", "user", "seller", "owner_id", "user_id"];
-    for (const key of keys) {
-      try {
-        const res = await api.get("/marketplace/material-listings/", {
-          params: { ...params, [key]: userId },
-        });
-        if (res && (Array.isArray(res.data) ? true : res.data)) return res;
-      } catch (err) {
-        // try next key
-      }
-    }
-    return Promise.resolve({ data: [] });
-  },
 
   uploadProfileImage: (formData) => {
     return api.put("/accounts/profile/image/", formData, {
@@ -134,22 +122,6 @@ const userService = {
   getUserReviews: (userId) => {
     return api.get(`/community/reviews/?target_user=${userId}`);
   },
-
-  // Convenience: create/update/delete reviews via marketplaceService
-  createReview: (data) => marketplaceService.reviews.create(data),
-  updateReview: (id, data) => marketplaceService.reviews.update(id, data),
-  deleteReview: (id) => marketplaceService.reviews.delete(id),
-
-  // Convenience wrappers for marketplace creations/updates tied to the user
-  createProduct: (data) => marketplaceService.products.create(data),
-  updateProduct: (id, data) => marketplaceService.products.update(id, data),
-  deleteProduct: (id) => marketplaceService.products.delete(id),
-
-  createMaterialListing: (data) =>
-    marketplaceService.materialListings.create(data),
-  updateMaterialListing: (id, data) =>
-    marketplaceService.materialListings.update(id, data),
-  deleteMaterialListing: (id) => marketplaceService.materialListings.delete(id),
 };
 
 export default userService;

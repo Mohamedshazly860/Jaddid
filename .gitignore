@@ -36,3 +36,6 @@ yarn-error.log*
 *~
 
 .eslintcache
+
+issues.txt
+PROFILE_BUG_SOLVED.md

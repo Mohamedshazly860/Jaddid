@@ -26,7 +26,6 @@ const UserProfile = () => {
 
   const extractId = (u) => {
     if (!u) return null;
-    // Prioritize common backend ID keys
     const id =
       u.id ||
       u.pk ||
@@ -39,7 +38,6 @@ const UserProfile = () => {
       (u.account && u.account.id) ||
       (u.user && u.user.id);
 
-    // If no ID, fallback to email (useful for local testing)
     if (!id && u.email) return u.email.toLowerCase();
 
     return id ? String(id) : null;
@@ -64,11 +62,14 @@ const UserProfile = () => {
 
         let profileRes;
         if (!idToLoad) {
-          profileRes = await userService.getCurrentUser();
+          // For current user, fetch both endpoints in parallel
+          profileRes = await userService.getCurrentUserWithProfile();
         } else {
           if (String(idToLoad) === String(currentAuthId)) {
-            profileRes = await userService.getCurrentUser();
+            // For own profile, fetch both endpoints in parallel
+            profileRes = await userService.getCurrentUserWithProfile();
           } else {
+            // For other users, fetch by ID
             profileRes = await userService.getUserById(idToLoad);
           }
         }
@@ -90,7 +91,6 @@ const UserProfile = () => {
           address: raw.profile?.address ?? raw.address ?? "",
           bio: raw.profile?.bio ?? raw.bio ?? "",
 
-          // FIX: Add cache-busting timestamp to image URL
           profileImage: raw.profile?.profile_image
             ? `${raw.profile.profile_image}?t=${timestamp}`
             : raw.profile_image

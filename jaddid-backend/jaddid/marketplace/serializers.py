@@ -363,6 +363,11 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
         validated_data['seller'] = self.context['request'].user
+
+        # New products should be published immediately so they appear in the public marketplace.
+        # This avoids creating invisible draft listings when the client submits a draft state.
+        validated_data['status'] = Product.ACTIVE
+
         product = Product.objects.create(**validated_data)
         
         # Create product images

@@ -21,6 +21,7 @@ urlpatterns = [
 
     #Live Tracking (For Buyers)
     path('tracking/<str:order_id>/', views.get_order_tracking, name='order-tracking'),
+    path('tracking/<str:order_id>', views.get_order_tracking, name='order-tracking-no-slash'),
 
     #Admin/Testing Utilities
     path('couriers/available/', views.get_available_couriers, name='available-couriers'),

@@ -4,7 +4,7 @@ const orderService = {
   create: (data) => api.post("/orders/orders/", data),
   getOrder: (orderId) => api.get(`/orders/orders/${orderId}/`),
   getTracking: (orderId) => {
-    return api.get(`/logistics/tracking/${orderId}//`);
+    return api.get(`/logistics/tracking/${orderId}/`);
   },
   assignCourier: (orderId) => {
     return api.post(`/logistics/order/${orderId}/assign/`);

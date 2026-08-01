@@ -21,7 +21,7 @@ try:
     conn.autocommit = True
     cursor = conn.cursor()
     
-    print("🔧 Fixing date_joined column type...")
+    print(" Fixing date_joined column type...")
     
     # Fix the column type
     cursor.execute("""
@@ -33,14 +33,14 @@ try:
         END;
     """)
     
-    print("✅ Column type fixed successfully!")
+    print("Column type fixed successfully!")
     
     cursor.close()
     conn.close()
     
 except Exception as e:
-    print(f"❌ Error: {e}")
-    print("\nℹ️  Please run this SQL manually in pgAdmin or psql:")
+    print(f" Error: {e}")
+    print("\n  Please run this SQL manually in pgAdmin or psql:")
     print("""
     ALTER TABLE accounts_user 
     ALTER COLUMN date_joined TYPE timestamp with time zone 

@@ -8,3 +8,4 @@ db.sqlite3-journal
 Thumbs.db
 __pycache__/
 *.pyc
+jaddid_guide.txt

@@ -22,4 +22,4 @@ content = re.sub(pattern, replacement, content, flags=re.DOTALL)
 with open('jaddid/settings.py', 'w', encoding='utf-8') as f:
     f.write(content)
 
-print('✅ CORS origins fixed!')
+print('CORS origins fixed!')

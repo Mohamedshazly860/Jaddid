@@ -16,5 +16,5 @@ content = content.replace(old_text, new_text)
 with open('jaddid/settings.py', 'w', encoding='utf-8') as f:
     f.write(content)
 
-print('✅ CORS origins updated successfully!')
+print(' CORS origins updated successfully!')
 print('Added http://localhost:5174 and http://127.0.0.1:5174')

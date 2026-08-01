@@ -11,7 +11,7 @@ email = 'admin@jaddid.com'
 password = 'admin123'
 
 if User.objects.filter(email=email).exists():
-    print(f'✅ Superuser with email {email} already exists!')
+    print(f'Superuser with email {email} already exists!')
     user = User.objects.get(email=email)
 else:
     user = User.objects.create_superuser(
@@ -21,8 +21,8 @@ else:
         last_name='User',
         role='admin'
     )
-    print(f'✅ Superuser created successfully!')
+    print(f'Superuser created successfully!')
 
-print(f'\n📧 Email: {email}')
-print(f'🔑 Password: {password}')
-print(f'\n🌐 Access admin panel at: http://127.0.0.1:8000/admin/')
+print(f'\n Email: {email}')
+print(f' Password: {password}')
+print(f'\n Access admin panel at: http://127.0.0.1:8000/admin/')

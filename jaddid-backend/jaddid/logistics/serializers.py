@@ -20,10 +20,10 @@ class CourierSerializer(serializers.ModelSerializer):
             'vehicle_number',
             'current_lat',
             'current_lng',
-            'is_active',
+            'is_available',
             'created_at'
         ]
-    read_only_fields=['id', 'is_approved', 'is_verified', 'created_at']
+    read_only_fields=['id', 'created_at']
 
 
 class CourierRegistrationSerializer(serializers.ModelSerializer):
@@ -87,7 +87,7 @@ class CourierUpdateSerializer(serializers.ModelSerializer):
             'phone',
             'transport_type',
             'vehicle_number',
-            'is_active'
+            'is_available'
         ]
 
 

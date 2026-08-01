@@ -158,21 +158,21 @@ def update_courier_profile(request):
 @permission_classes([IsAuthenticated])
 def toggle_courier_availability(request):
     courier_id=request.auth.get('courier_id')
-    is_active=request.data.get('is_active')
+    is_available=request.data.get('is_available')
 
-    if is_active is None:
+    if is_available is None:
         return Response({
-            'error': 'is active filed is required'
+            'error': 'is_available field is required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
         courier = Courier.objects.get(id=courier_id)
-        courier.is_active = is_active
-        courier.save()
+        courier.is_available = is_available
+        courier.save(update_fields=['is_available', 'updated_at'])
 
         return Response({
-            'is_active': courier.is_active,
-            'message': f"status changed to {'busy' if is_active else 'available'}"
+            'is_available': courier.is_available,
+            'message': f"status changed to {'busy' if not is_available else 'available'}"
         }, status=status.HTTP_200_OK)
 
     except Courier.DoesNotExist:
@@ -395,7 +395,7 @@ def get_order_tracking(request, order_id):
 def get_available_couriers(request):
     """Get list of available couriers (for admin/testing)"""
     couriers = Courier.objects.filter(
-        is_active = True
+        is_available=True
     )
 
     serializer = CourierSerializer(couriers, many=True)

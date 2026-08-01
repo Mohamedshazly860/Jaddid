@@ -4,8 +4,8 @@ from .models import CourierAssignment, LiveTracking, Order, Courier
 
 @admin.register(Courier)
 class CourierAdmin(admin.ModelAdmin):
-    list_display = ('get_full_name', 'email', 'transport_type', 'is_active', 'current_lat', 'current_lng')
-    list_filter = ('transport_type', 'is_active')
+    list_display = ('get_full_name', 'email', 'transport_type', 'is_available', 'current_lat', 'current_lng')
+    list_filter = ('transport_type', 'is_available')
     search_fields = ('first_name', 'last_name', 'email')
     # readonly_fields = ('current_lat', 'current_lng')
 

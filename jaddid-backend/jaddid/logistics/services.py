@@ -38,7 +38,7 @@ class CourierService:
         """Find the nearest available courier
         Returns: Courier Object or None"""
         available_couriers=Courier.objects.filter(
-            is_active=True,
+            is_available=True,
             current_lat__isnull=False,
             current_lng__isnull=False
         )
@@ -160,8 +160,8 @@ class CourierService:
                 assignment.completed_at = timezone.now()
                 assignment.save()
 
-                courier.is_active = True
-                courier.save()
+                courier.is_available = True
+                courier.save(update_fields=['is_available', 'updated_at'])
 
                 print(f"DEBUG: order {order.order_id} Delivered Successfully!!!!")
             except Exception as e:

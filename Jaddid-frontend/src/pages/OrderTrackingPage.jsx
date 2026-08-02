@@ -217,10 +217,24 @@ const OrderTrackingPage = () => {
   const getCourierInfo = () => {
     if (!order) return null;
 
+    if (order.courier_details) {
+      const courier = order.courier_details;
+      return {
+        name:
+          courier.full_name ||
+          `${courier.first_name || ""} ${courier.last_name || ""}`.trim(),
+        phone: courier.phone || null,
+        transport_type: courier.transport_type || null,
+        vehicle_number: courier.vehicle_number || null,
+      };
+    }
+
     if (order.courier_assigned && order.courier_name) {
       return {
         name: order.courier_name,
-        transport_type: order.transport_type || null,
+        phone: order.courier_phone || null,
+        transport_type: order.courier_transport_type || null,
+        vehicle_number: order.courier_vehicle_number || null,
       };
     }
 
@@ -292,6 +306,107 @@ const OrderTrackingPage = () => {
   const courierInfo = getCourierInfo();
   const courierLocation = getCourierLocation();
   const destinationLocation = getDestinationLocation();
+
+  // Courier avatar SVG as JSX. Accepts an aria label for accessibility.
+  const courierAvatarSvg = (label) => (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 680 520"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label={label}
+    >
+      <title>Cartoon delivery man avatar</title>
+      <desc>A friendly cartoon delivery man wearing a dark green uniform and light brown helmet, holding a package</desc>
+
+      <defs>
+        <clipPath id="faceClip">
+          <ellipse cx="340" cy="185" rx="52" ry="58" />
+        </clipPath>
+      </defs>
+
+      <circle cx="340" cy="280" r="210" fill="#E8F4FD" />
+      <ellipse cx="340" cy="468" rx="100" ry="14" fill="#B0C8DC" opacity="0.5" />
+
+      <rect x="302" y="368" width="30" height="80" rx="14" fill="#C19A6B" />
+      <rect x="348" y="368" width="30" height="80" rx="14" fill="#C19A6B" />
+
+      <ellipse cx="317" cy="448" rx="22" ry="12" fill="#1A1A2E" />
+      <ellipse cx="363" cy="448" rx="22" ry="12" fill="#1A1A2E" />
+      <rect x="295" y="440" width="44" height="12" rx="6" fill="#222244" />
+      <rect x="341" y="440" width="44" height="12" rx="6" fill="#222244" />
+
+      <rect x="285" y="260" width="130" height="120" rx="22" fill="#2E7D32" />
+      <polygon points="340,262 318,290 340,278 362,290" fill="#1B5E20" />
+      <line x1="340" y1="278" x2="340" y2="375" stroke="#1B5E20" strokeWidth="3" />
+      <circle cx="340" cy="300" r="4" fill="#F0C040" />
+      <circle cx="340" cy="320" r="4" fill="#F0C040" />
+      <circle cx="340" cy="340" r="4" fill="#F0C040" />
+
+      <rect x="292" y="285" width="36" height="24" rx="4" fill="#F0C040" />
+      <text x="310" y="301" textAnchor="middle" fontFamily="Arial" fontSize="9" fontWeight="bold" fill="#1B5E20">DEL</text>
+
+      <rect x="240" y="262" width="46" height="26" rx="13" fill="#2E7D32" transform="rotate(-18 240 275)" />
+      <ellipse cx="233" cy="316" rx="18" ry="16" fill="#F4A96A" />
+      <ellipse cx="218" cy="308" rx="7" ry="5" fill="#F4A96A" transform="rotate(-30 218 308)" />
+      <ellipse cx="215" cy="320" rx="7" ry="5" fill="#F4A96A" transform="rotate(-10 215 320)" />
+      <ellipse cx="218" cy="330" rx="7" ry="5" fill="#F4A96A" transform="rotate(15 218 330)" />
+
+      <rect x="394" y="262" width="46" height="26" rx="13" fill="#2E7D32" transform="rotate(18 440 275)" />
+      <ellipse cx="447" cy="316" rx="18" ry="16" fill="#F4A96A" />
+
+      <rect x="430" y="320" width="72" height="62" rx="6" fill="#E8A840" />
+      <rect x="430" y="320" width="72" height="62" rx="6" fill="none" stroke="#C47C20" strokeWidth="1.5" />
+      <rect x="430" y="346" width="72" height="10" fill="#C47C20" opacity="0.6" />
+      <rect x="462" y="320" width="10" height="62" fill="#C47C20" opacity="0.6" />
+      <text x="466" y="343" textAnchor="middle" fontFamily="Arial" fontSize="11" fontWeight="bold" fill="#7A4A00">▲</text>
+      <text x="466" y="357" textAnchor="middle" fontFamily="Arial" fontSize="8" fill="#7A4A00">THIS</text>
+      <text x="466" y="368" textAnchor="middle" fontFamily="Arial" fontSize="8" fill="#7A4A00">SIDE UP</text>
+
+      <rect x="322" y="228" width="36" height="40" rx="10" fill="#F4A96A" />
+      <polygon points="322,248 332,268 340,258 348,268 358,248" fill="white" />
+      <ellipse cx="340" cy="185" rx="62" ry="68" fill="#F4A96A" />
+
+      <ellipse cx="278" cy="192" rx="12" ry="16" fill="#F4A96A" />
+      <ellipse cx="280" cy="192" rx="7" ry="11" fill="#E8906A" />
+      <ellipse cx="402" cy="192" rx="12" ry="16" fill="#F4A96A" />
+      <ellipse cx="400" cy="192" rx="7" ry="11" fill="#E8906A" />
+
+      <ellipse cx="340" cy="128" rx="58" ry="20" fill="#3D2000" />
+      <path d="M278,170 Q278,108 340,108 Q402,108 402,170 L398,178 Q370,162 340,160 Q310,162 282,178 Z" fill="#C19A6B" />
+      <rect x="280" y="168" width="120" height="16" rx="6" fill="#A0785A" />
+      <circle cx="340" cy="138" r="14" fill="white" opacity="0.9" />
+      <text x="340" y="143" textAnchor="middle" fontFamily="Arial" fontSize="11" fontWeight="bold" fill="#A0785A">★</text>
+      <ellipse cx="320" cy="124" rx="14" ry="7" fill="white" opacity="0.2" transform="rotate(-20 320 124)" />
+
+      <ellipse cx="316" cy="185" rx="13" ry="14" fill="white" />
+      <ellipse cx="364" cy="185" rx="13" ry="14" fill="white" />
+      <ellipse cx="318" cy="187" rx="8" ry="9" fill="#3D2000" />
+      <ellipse cx="366" cy="187" rx="8" ry="9" fill="#3D2000" />
+      <circle cx="320" cy="187" r="4" fill="#111111" />
+      <circle cx="368" cy="187" r="4" fill="#111111" />
+      <circle cx="322" cy="184" r="2.5" fill="white" />
+      <circle cx="370" cy="184" r="2.5" fill="white" />
+
+      <path d="M305,173 Q316,167 327,171" stroke="#3D2000" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M353,171 Q364,167 375,173" stroke="#3D2000" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+
+      <ellipse cx="340" cy="200" rx="8" ry="6" fill="#E8906A" />
+      <circle cx="336" cy="202" r="3" fill="#D07A50" />
+      <circle cx="344" cy="202" r="3" fill="#D07A50" />
+
+      <path d="M316,216 Q330,230 364,216" stroke="#C06040" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M324,220 Q340,232 356,220" stroke="none" fill="white" />
+
+      <ellipse cx="295" cy="210" rx="14" ry="9" fill="#F08080" opacity="0.35" />
+      <ellipse cx="385" cy="210" rx="14" ry="9" fill="#F08080" opacity="0.35" />
+
+      <line x1="185" y1="260" x2="225" y2="260" stroke="#B0C8DC" strokeWidth="3" strokeLinecap="round" />
+      <line x1="172" y1="275" x2="218" y2="275" stroke="#B0C8DC" strokeWidth="2" strokeLinecap="round" />
+      <line x1="183" y1="290" x2="222" y2="290" stroke="#B0C8DC" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50" dir={isArabic ? "rtl" : "ltr"}>
@@ -443,21 +558,30 @@ const OrderTrackingPage = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                      {courierInfo.name.charAt(0).toUpperCase()}
+                  <div className="flex items-start gap-4">
+                    <div className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center">
+                      {courierAvatarSvg(isArabic ? "سائق التوصيل" : "Courier avatar")}
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-lg">
+                      <p className="font-bold text-3xl text-gray-900 leading-tight">
                         {courierInfo.name}
                       </p>
+                      {courierInfo.phone && (
+                        <div className="flex items-center gap-2 mt-3 text-sm text-gray-700">
+                          <Phone className="w-4 h-4 text-gray-500" />
+                          <span>{courierInfo.phone}</span>
+                        </div>
+                      )}
                       {courierInfo.transport_type && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <Truck className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm text-gray-600 capitalize">
-                            {/* Replaces underscores with spaces, e.g., 'motor_cycle' -> 'motor cycle' */}
-                            {courierInfo.transport_type.replace(/_/g, " ")}
-                          </span>
+                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-700">
+                          <Truck className="w-4 h-4 text-gray-500" />
+                          <span>{courierInfo.transport_type.replace(/_/g, " ")}</span>
+                        </div>
+                      )}
+                      {courierInfo.vehicle_number && (
+                        <div className="flex items-center gap-2 mt-2 text-sm text-gray-700">
+                          <span className="text-gray-500">Vehicle Number: </span>
+                          <span>{courierInfo.vehicle_number}</span>
                         </div>
                       )}
                     </div>

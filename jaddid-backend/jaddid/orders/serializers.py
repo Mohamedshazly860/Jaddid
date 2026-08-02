@@ -46,8 +46,11 @@ class OrderSerializer(serializers.ModelSerializer):
     buyer_email = serializers.CharField(source='buyer.email', read_only=True)
     seller_email = serializers.CharField(source='seller.email', read_only=True)
     status_logs = OrderStatusTrackingSerializer(many=True, read_only=True)
-    courier_details = CourierSerializer(source="courier", read_only=True)
+    courier_details = CourierSerializer(source="courier_assignment.courier", read_only=True)
     courier_name = serializers.SerializerMethodField()
+    courier_phone = serializers.SerializerMethodField()
+    courier_transport_type = serializers.SerializerMethodField()
+    courier_vehicle_number = serializers.SerializerMethodField()
     courier_assigned = serializers.SerializerMethodField()
     assignment_id = serializers.SerializerMethodField()
 
@@ -55,10 +58,10 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'order_id', 'buyer', 'buyer_email', 'seller', 'seller_id', 'seller_email',
-            'order_type','courier_details','stripe_payment_intent_id', 'delivery_address', 'total_price', 'order_status',
+            'order_type', 'courier_details', 'stripe_payment_intent_id', 'delivery_address', 'total_price', 'order_status',
             'payment_status', 'payment_method_id', 'created_at', 'updated_at',
             'delivered_at', 'cancelled_at', 'items', 'status_logs', 'customer_lat', 'customer_lng',
-            'courier_name', 'courier_assigned', 'assignment_id'
+            'courier_name', 'courier_phone', 'courier_transport_type', 'courier_vehicle_number', 'courier_assigned', 'assignment_id'
         ]
         read_only_fields = ['total_price', 'order_status', 'created_at', 'updated_at', 'delivered_at', 'cancelled_at']
         ref_name = 'OrdersOrderSerializer'
@@ -100,7 +103,7 @@ class OrderSerializer(serializers.ModelSerializer):
         """Get courier phone if assigned"""
         try:
             assignment = CourierAssignment.objects.get(order=obj)
-            return assignment.courier.phone_number
+            return assignment.courier.phone
         except CourierAssignment.DoesNotExist:
             return None
     
@@ -113,6 +116,38 @@ class OrderSerializer(serializers.ModelSerializer):
         try:
             assignment = CourierAssignment.objects.get(order=obj)
             return str(assignment.id)
+        except CourierAssignment.DoesNotExist:
+            return None
+
+    def get_courier_transport_type(self, obj):
+        """Get courier transport type if assigned"""
+        try:
+            assignment = CourierAssignment.objects.get(order=obj)
+            return assignment.courier.transport_type
+        except CourierAssignment.DoesNotExist:
+            return None
+
+    def get_courier_vehicle_number(self, obj):
+        """Get courier vehicle number if assigned"""
+        try:
+            assignment = CourierAssignment.objects.get(order=obj)
+            return assignment.courier.vehicle_number
+        except CourierAssignment.DoesNotExist:
+            return None
+
+    def get_courier_transport_type(self, obj):
+        """Get courier transport type if assigned"""
+        try:
+            assignment = CourierAssignment.objects.get(order=obj)
+            return assignment.courier.transport_type
+        except CourierAssignment.DoesNotExist:
+            return None
+
+    def get_courier_vehicle_number(self, obj):
+        """Get courier vehicle number if assigned"""
+        try:
+            assignment = CourierAssignment.objects.get(order=obj)
+            return assignment.courier.vehicle_number
         except CourierAssignment.DoesNotExist:
             return None
 

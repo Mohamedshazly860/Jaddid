@@ -5,11 +5,11 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue)
 ![Python](https://img.shields.io/badge/Python-3.11+-yellow)
 
-## 📋 Overview
+##  Overview
 
 Jaddid is a comprehensive Django REST Framework API for a recyclable materials marketplace. It enables users to buy and sell recyclable materials with features like product listings, orders, reviews, messaging, and reporting.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.11+
@@ -52,7 +52,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 jaddid-backend/
@@ -72,7 +72,7 @@ jaddid-backend/
 └── README.md                 # This file
 ```
 
-## 🔧 Environment Variables
+## Environment Variables
 
 Create a `.env` file in the root directory:
 
@@ -93,24 +93,24 @@ DB_PORT=5432
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
-## 📚 API Documentation
+## API Documentation
 
 Once the server is running, access:
 - **Swagger UI**: http://localhost:8000/swagger/
 - **ReDoc**: http://localhost:8000/redoc/
 - **Admin Panel**: http://localhost:8000/admin/
 
-## 🎯 Features
+## Features
 
 ### Marketplace App
-- ✅ Product listings with images
-- ✅ Categories (hierarchical)
-- ✅ Orders & order tracking
-- ✅ Reviews & ratings
-- ✅ Favorites/Wishlist
-- ✅ Messaging system
-- ✅ Reporting system
-- ✅ Bilingual support (EN/AR)
+- Product listings with images
+- Categories (hierarchical)
+- Orders & order tracking
+- Reviews & ratings
+- Favorites/Wishlist
+- Messaging system
+- Reporting system
+- Bilingual support (EN/AR)
 
 ### Models (8)
 1. **Category** - Product categories
@@ -166,14 +166,14 @@ Once the server is running, access:
 - `GET /api/marketplace/reports/` - List reports
 - `POST /api/marketplace/reports/` - Create report
 
-## 🔒 Permissions
+## Permissions
 
 - **IsAuthenticatedOrReadOnly** - Public read, auth write
 - **IsSellerOrReadOnly** - Only seller can edit product
 - **IsOwnerOrReadOnly** - Only owner can edit resource
 - **IsAdminOrReadOnly** - Only admin can edit
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Key Features
 - UUID primary keys for security
@@ -182,7 +182,7 @@ Once the server is running, access:
 - Foreign key relationships
 - Automatic timestamps
 
-## 👥 Team Collaboration
+## Team Collaboration
 
 ### Git Workflow
 ```bash
@@ -207,13 +207,13 @@ Each team member should:
 3. Run migrations independently
 4. Never commit `.env` file
 
-## 📖 Full Documentation
+## Full Documentation
 
 For complete documentation in English and Arabic, see:
 - **[MARKETPLACE_DOCUMENTATION.md](MARKETPLACE_DOCUMENTATION.md)** - Complete documentation
 - **[DATABASE_SETUP.md](DATABASE_SETUP.md)** - Database setup guide
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run checks
@@ -226,7 +226,7 @@ python manage.py check --database default
 python manage.py test marketplace
 ```
 
-## 📦 Dependencies
+## Dependencies
 
 Main packages:
 - Django 4.2.7
@@ -238,7 +238,7 @@ Main packages:
 - drf-yasg 1.21.7
 - Pillow 11.0.0
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch
@@ -246,25 +246,25 @@ Main packages:
 4. Test thoroughly
 5. Submit pull request
 
-## 📝 License
+## License
 
 This project is part of a graduation project for [Your University].
 
-## 👨‍💻 Team
+## Team
 
 - **Project Lead**: Mohamed Shazly (@Mohamedshazly860)
 - **Backend Developer**: [Your Name]
 - **Database**: PostgreSQL
 - **Framework**: Django REST Framework
 
-## 📞 Support
+## Support
 
 For questions or issues:
 - Create an issue on GitHub
 - Contact the team lead
 - Check documentation files
 
-## 🎉 Acknowledgments
+## Acknowledgments
 
 - Django community
 - DRF contributors
@@ -273,6 +273,6 @@ For questions or issues:
 
 ---
 
-**Status**: ✅ Ready for team integration
+**Status**:  Ready for team integration
 **Version**: 1.0.0
 **Last Updated**: December 2025

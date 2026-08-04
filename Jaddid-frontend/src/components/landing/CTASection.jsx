@@ -24,7 +24,7 @@ export default function CTASection() {
               <img 
                 src={ctaIllustration} 
                 alt="" 
-                className="w-full max-w-sm floating drop-shadow-lg"
+                className="w-full max-w-sm drop-shadow-lg"
               />
             </div>
             

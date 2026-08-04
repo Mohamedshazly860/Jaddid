@@ -66,22 +66,6 @@ export default function HeroSection() {
                 {t('hero.secondaryCta')}
               </Button>
             </div>
-
-            {/* Stats */}
-            <div className={`grid grid-cols-3 gap-6 mt-12 pt-8 border-t border-border animate-fade-in-up delay-400 ${isRTL ? 'text-end' : ''}`}>
-              <div>
-                <div className="text-3xl font-bold text-forest">200+</div>
-                <div className="text-sm text-muted-foreground">{t('hero.stat1')}</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-forest">50K+</div>
-                <div className="text-sm text-muted-foreground">{t('hero.stat2')}</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-forest">25K+</div>
-                <div className="text-sm text-muted-foreground">{t('hero.stat3')}</div>
-              </div>
-            </div>
           </div>
 
           {/* Illustration - Made much bigger */}
@@ -91,34 +75,8 @@ export default function HeroSection() {
               <img 
                 src={heroIllustration} 
                 alt="Recycling illustration" 
-                className="w-full max-w-4xl lg:max-w-6xl xl:max-w-7xl floating drop-shadow-2xl scale-125 lg:scale-150"
+                className="w-full h-auto max-w-[320px] sm:max-w-[520px] md:max-w-[800px] lg:max-w-[1200px] xl:max-w-[1400px] drop-shadow-2xl scale-100 sm:scale-105 md:scale-125 lg:scale-150 transition-transform"
               />
-              
-              {/* Floating badge - positioned further from illustration */}
-              <div className="absolute -top-16 -right-8 lg:-right-32 bg-card p-4 rounded-2xl shadow-xl animate-float border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-orange/20 rounded-full flex items-center justify-center">
-                    <Coins className="w-6 h-6 text-orange" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{isRTL ? 'اربح مكافآت' : 'Earn Rewards'}</div>
-                    <div className="text-xs text-muted-foreground">{isRTL ? 'لكل كيلو' : 'Per Kilo'}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating badge 2 - positioned further from illustration */}
-              <div className="absolute bottom-32 -left-8 lg:-left-36 bg-card p-4 rounded-2xl shadow-xl floating-delay border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-sage/20 rounded-full flex items-center justify-center">
-                    <BadgeCheck className="w-6 h-6 text-sage" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{isRTL ? 'صديق للبيئة' : 'Eco-Friendly'}</div>
-                    <div className="text-xs text-muted-foreground">{isRTL ? 'معتمد' : 'Certified'}</div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

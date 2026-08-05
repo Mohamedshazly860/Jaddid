@@ -518,20 +518,6 @@ const ServicesPage = () => {
         </div>
       </section>
 
-      {/* Impact Stats */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {impactStats.map((s, idx) => (
-              <div key={idx} className="p-6 rounded-2xl border-2 border-[rgba(112,138,88,0.18)] bg-[rgba(112,138,88,0.05)]">
-                <div className="text-3xl font-bold text-[#2D4F2B]">{s.value}</div>
-                <div className="text-sm text-gray-700 mt-2">{isArabic ? s.ar : s.en}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Final CTA */}
       <section className="py-20 px-4 bg-gradient-to-br from-[#FFF8F0] via-white to-[#E8F3E8]">
         <div className="container mx-auto max-w-4xl text-center space-y-6">

@@ -1,5 +1,5 @@
 // // Jaddid-frontend/src/components/landing/Navbar.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Menu,
   X,
@@ -29,6 +29,10 @@ import communityService from "@/services/communityService";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [showNotificationDot, setShowNotificationDot] = useState(false);
+  const [hasDismissedNotificationDot, setHasDismissedNotificationDot] =
+    useState(false);
+  const prevUnreadCountRef = useRef(0);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { language, setLanguage, t, isRTL } = useLanguage();
@@ -62,16 +66,32 @@ export default function Navbar() {
   });
 
   const notifications = notificationsData?.results || [];
-  const notificationCount = countData?.unread_count || 0;
-  const [showNotificationDot, setShowNotificationDot] = useState(
-    notificationCount > 0
-  );
+  const unreadNotifications = notifications.filter((n) => !n.is_read);
+  const notificationCount =
+    countData?.unread_count ?? unreadNotifications.length;
 
   useEffect(() => {
-    if (!isNotificationsOpen) {
-      setShowNotificationDot(notificationCount > 0);
+    if (!isAuthenticated) {
+      setShowNotificationDot(false);
+      setHasDismissedNotificationDot(false);
+      prevUnreadCountRef.current = 0;
+      return;
     }
-  }, [notificationCount, isNotificationsOpen]);
+
+    const previousUnreadCount = prevUnreadCountRef.current;
+
+    if (notificationCount > 0 && notificationCount > previousUnreadCount) {
+      setHasDismissedNotificationDot(false);
+    }
+
+    if (notificationCount > 0 && !hasDismissedNotificationDot) {
+      setShowNotificationDot(true);
+    } else {
+      setShowNotificationDot(false);
+    }
+
+    prevUnreadCountRef.current = notificationCount;
+  }, [notificationCount, isAuthenticated, hasDismissedNotificationDot]);
 
   // Mark as read mutation
   const markAsReadMutation = useMutation({
@@ -85,8 +105,31 @@ export default function Navbar() {
     },
   });
 
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      if (unreadNotifications.length === 0) return;
+
+      await Promise.all(
+        unreadNotifications.map((n) =>
+          communityService.notifications.markAsRead(n.id)
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries(["notifications-count"]);
+      setHasDismissedNotificationDot(true);
+      setShowNotificationDot(false);
+    },
+    onError: (error) => {
+      console.error("Failed to mark all notifications as read:", error);
+    },
+  });
+
   const handleNotificationClick = async (id) => {
     try {
+      setHasDismissedNotificationDot(true);
+      setShowNotificationDot(false);
       await markAsReadMutation.mutateAsync(id);
       navigate("/notifications");
     } catch (error) {
@@ -95,9 +138,21 @@ export default function Navbar() {
     }
   };
 
+  const handleMarkAllAsRead = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await markAllAsReadMutation.mutateAsync();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
+  };
+
   const handleNotificationsOpenChange = (open) => {
     setIsNotificationsOpen(open);
     if (open) {
+      setHasDismissedNotificationDot(true);
       setShowNotificationDot(false);
     }
   };
@@ -173,7 +228,7 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <>
-                {/* 🔔 Notifications */}
+                {/* Notifications */}
                 <DropdownMenu onOpenChange={handleNotificationsOpenChange}>
                   <DropdownMenuTrigger asChild>
                     <button className="relative p-2 rounded-full hover:bg-cream">
@@ -185,9 +240,29 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end" className="w-96">
-                    <DropdownMenuLabel>
-                      {language === "en" ? "Notifications" : "الإشعارات"}
-                    </DropdownMenuLabel>
+                    <div className="flex items-center justify-between px-3 py-2">
+                      <DropdownMenuLabel className="p-0">
+                        {language === "en" ? "Notifications" : "الإشعارات"}
+                      </DropdownMenuLabel>
+
+                      {unreadNotifications.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleMarkAllAsRead}
+                          disabled={markAllAsReadMutation.isPending}
+                          className="text-xs font-medium text-forest hover:text-forest/80 disabled:opacity-50"
+                        >
+                          {markAllAsReadMutation.isPending
+                            ? language === "en"
+                              ? "Marking..."
+                              : "جارٍ التحديد..."
+                            : language === "en"
+                            ? "Mark all read"
+                            : "تحديد الكل كمقروء"}
+                        </button>
+                      )}
+                    </div>
+
                     <DropdownMenuSeparator />
 
                     <div className="max-h-96 overflow-y-auto">
@@ -240,13 +315,13 @@ export default function Navbar() {
 
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => navigate("/notifications")}
+                      onClick={handleMarkAllAsRead}
                       className="text-center text-forest font-medium hover:bg-forest/10"
                     >
                       <Bell className="w-4 h-4 mr-2" />
                       {language === "en"
-                        ? "View all notifications"
-                        : "عرض جميع الإشعارات"}
+                        ? "Mark all as read"
+                        : "تم التمثيل"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -383,16 +458,18 @@ export default function Navbar() {
                     <div className="mb-4">
                       <DropdownMenu onOpenChange={handleNotificationsOpenChange}>
                         <DropdownMenuTrigger asChild>
-                          <button className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-cream">
-                            <Bell className="w-5 h-5 text-forest" />
+                          <button className="relative flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-cream">
+                            <div className="relative">
+                              <Bell className="w-5 h-5 text-forest" />
+                              {showNotificationDot && (
+                                <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-orange border-2 border-background" />
+                              )}
+                            </div>
                             <span>
                               {language === "en"
                                 ? "Notifications"
                                 : "الإشعارات"}
                             </span>
-                            {showNotificationDot && (
-                              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange border-2 border-background" />
-                            )}
                           </button>
                         </DropdownMenuTrigger>
 
@@ -432,9 +509,7 @@ export default function Navbar() {
                                   }`}
                                 >
                                   <p className="font-medium">
-                                    {language === "en"
-                                      ? n.title_en
-                                      : n.title_ar}
+                                    {language === "en" ? n.title_en : n.title_ar}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
                                     {language === "en" ? n.msg_en : n.msg_ar}

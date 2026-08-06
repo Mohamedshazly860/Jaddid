@@ -1,5 +1,5 @@
 // // Jaddid-frontend/src/components/landing/Navbar.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Menu,
   X,
@@ -22,13 +22,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import communityService from "@/services/communityService";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { language, setLanguage, t, isRTL } = useLanguage();
@@ -63,6 +63,15 @@ export default function Navbar() {
 
   const notifications = notificationsData?.results || [];
   const notificationCount = countData?.unread_count || 0;
+  const [showNotificationDot, setShowNotificationDot] = useState(
+    notificationCount > 0
+  );
+
+  useEffect(() => {
+    if (!isNotificationsOpen) {
+      setShowNotificationDot(notificationCount > 0);
+    }
+  }, [notificationCount, isNotificationsOpen]);
 
   // Mark as read mutation
   const markAsReadMutation = useMutation({
@@ -83,6 +92,13 @@ export default function Navbar() {
     } catch (error) {
       console.error("Failed to handle notification click:", error);
       navigate("/notifications");
+    }
+  };
+
+  const handleNotificationsOpenChange = (open) => {
+    setIsNotificationsOpen(open);
+    if (open) {
+      setShowNotificationDot(false);
     }
   };
 
@@ -158,14 +174,12 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 {/* 🔔 Notifications */}
-                <DropdownMenu>
+                <DropdownMenu onOpenChange={handleNotificationsOpenChange}>
                   <DropdownMenuTrigger asChild>
                     <button className="relative p-2 rounded-full hover:bg-cream">
                       <Bell className="w-5 h-5 text-forest" />
-                      {notificationCount > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-orange text-white text-xs">
-                          {notificationCount}
-                        </Badge>
+                      {showNotificationDot && (
+                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-orange border-2 border-background" />
                       )}
                     </button>
                   </DropdownMenuTrigger>
@@ -367,7 +381,7 @@ export default function Navbar() {
                   <>
                     {/* Mobile Notifications */}
                     <div className="mb-4">
-                      <DropdownMenu>
+                      <DropdownMenu onOpenChange={handleNotificationsOpenChange}>
                         <DropdownMenuTrigger asChild>
                           <button className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-cream">
                             <Bell className="w-5 h-5 text-forest" />
@@ -376,10 +390,8 @@ export default function Navbar() {
                                 ? "Notifications"
                                 : "الإشعارات"}
                             </span>
-                            {notificationCount > 0 && (
-                              <Badge className="bg-orange text-white text-xs">
-                                {notificationCount}
-                              </Badge>
+                            {showNotificationDot && (
+                              <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange border-2 border-background" />
                             )}
                           </button>
                         </DropdownMenuTrigger>

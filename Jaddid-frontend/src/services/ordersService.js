@@ -117,8 +117,8 @@ const ordersService = {
 
   cancel: (id) => api.post(`/orders/orders/${id}/cancel/`),
 
-  getPurchases: () => api.get("/orders/orders/my_orders"),
-  getSales: () => api.get("/orders/orders/seller_orders"),
+  getPurchases: (page = 1) => api.get("/orders/orders/my_orders", { params: { page } }),
+  getSales: (page = 1) => api.get("/orders/orders/seller_orders", { params: { page } }),
 
   // Stripe payment methods
   createPaymentIntent: (data) =>

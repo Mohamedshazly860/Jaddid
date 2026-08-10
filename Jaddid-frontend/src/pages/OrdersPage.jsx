@@ -13,7 +13,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const OrdersPage = () => {
   const [purchases, setPurchases] = useState([]);
+  const [purchasesPage, setPurchasesPage] = useState(1);
+  const [purchasesNext, setPurchasesNext] = useState(null);
+  const [purchasesPrev, setPurchasesPrev] = useState(null);
+  const [purchasesCount, setPurchasesCount] = useState(0);
+  const PAGE_SIZE = 10;
+  const [purchasesJump, setPurchasesJump] = useState("");
   const [sales, setSales] = useState([]);
+  const [salesPage, setSalesPage] = useState(1);
+  const [salesNext, setSalesNext] = useState(null);
+  const [salesPrev, setSalesPrev] = useState(null);
+  const [salesCount, setSalesCount] = useState(0);
+  const [salesJump, setSalesJump] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("purchases");
   const { toast } = useToast();
@@ -24,39 +35,66 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
-
   const fetchOrders = async () => {
+    await Promise.all([fetchPurchases(purchasesPage), fetchSales(salesPage)]);
+  };
+
+  const fetchPurchases = async (page = 1) => {
     try {
       setLoading(true);
-
-      const [purchasesRes, salesRes] = await Promise.all([
-        ordersService.getPurchases(),
-        ordersService.getSales(),
-      ]);
-
-      console.log("Purchases response:", purchasesRes.data);
-      console.log("Sales response:", salesRes.data);
-
-      const normalizePurchases = Array.isArray(purchasesRes.data)
-        ? purchasesRes.data
-        : purchasesRes.data?.results || [];
-
-      const normalizeSales = Array.isArray(salesRes.data)
-        ? salesRes.data
-        : salesRes.data?.results || [];
-
-      setPurchases(normalizePurchases);
-      setSales(normalizeSales);
+      const res = await ordersService.getPurchases(page);
+      const data = res.data;
+      const results = Array.isArray(data) ? data : data.results || [];
+      setPurchases(results);
+      setPurchasesNext(data.next || null);
+      setPurchasesPrev(data.previous || null);
+      setPurchasesCount(data.count || results.length);
     } catch (error) {
-      console.error("Failed fetching orders:", error.response?.data || error);
+      console.error("Failed fetching purchases:", error.response?.data || error);
       toast({
         title: isArabic ? "خطأ" : "Error",
-        description: isArabic ? "فشل تحميل الطلبات" : "Failed to load orders",
+        description: isArabic ? "فشل تحميل المشتريات" : "Failed to load purchases",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchSales = async (page = 1) => {
+    try {
+      setLoading(true);
+      const res = await ordersService.getSales(page);
+      const data = res.data;
+      const results = Array.isArray(data) ? data : data.results || [];
+      setSales(results);
+      setSalesNext(data.next || null);
+      setSalesPrev(data.previous || null);
+      setSalesCount(data.count || results.length);
+    } catch (error) {
+      console.error("Failed fetching sales:", error.response?.data || error);
+      toast({
+        title: isArabic ? "خطأ" : "Error",
+        description: isArabic ? "فشل تحميل المبيعات" : "Failed to load sales",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const goToPurchasesPage = (page) => {
+    const total = Math.max(1, Math.ceil((purchasesCount || 0) / PAGE_SIZE));
+    const p = Math.max(1, Math.min(page || 1, total));
+    setPurchasesPage(p);
+    fetchPurchases(p);
+  };
+
+  const goToSalesPage = (page) => {
+    const total = Math.max(1, Math.ceil((salesCount || 0) / PAGE_SIZE));
+    const p = Math.max(1, Math.min(page || 1, total));
+    setSalesPage(p);
+    fetchSales(p);
   };
 
   const OrderCard = ({ order, isSale = false }) => {
@@ -234,10 +272,10 @@ const OrdersPage = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="purchases">
-              {isArabic ? "المشتريات" : "Purchases"} ({purchases.length})
+              {isArabic ? "المشتريات" : "Purchases"} ({purchasesCount})
             </TabsTrigger>
             <TabsTrigger value="sales">
-              {isArabic ? "المبيعات" : "Sales"} ({sales.length})
+              {isArabic ? "المبيعات" : "Sales"} ({salesCount})
             </TabsTrigger>
           </TabsList>
 
@@ -269,6 +307,70 @@ const OrdersPage = () => {
                     isSale={false}
                   />
                 ))}
+              </div>
+            )}
+            {purchasesCount > 0 && (
+              <div className="flex flex-col items-center mt-6 gap-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => goToPurchasesPage(1)}
+                    disabled={purchasesPage === 1}
+                  >
+                    {isArabic ? "الأولى" : "First"}
+                  </Button>
+
+                  <Button
+                    onClick={() => goToPurchasesPage(purchasesPage - 1)}
+                    disabled={!purchasesPrev}
+                  >
+                    {isArabic ? "السابق" : "Previous"}
+                  </Button>
+
+                  <div className="flex items-center gap-2 px-3">
+                    <div className="text-sm text-gray-600">
+                      {isArabic ? "صفحة" : "Page"}
+                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={Math.max(1, Math.ceil((purchasesCount || 0) / PAGE_SIZE))}
+                      value={purchasesJump || purchasesPage}
+                      onChange={(e) => setPurchasesJump(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const val = Number(purchasesJump || purchasesPage);
+                          goToPurchasesPage(val);
+                          setPurchasesJump("");
+                        }
+                      }}
+                      className="w-20 p-1 border rounded text-center"
+                    />
+                    <div className="text-sm text-gray-600">/ {Math.max(1, Math.ceil((purchasesCount || 0) / PAGE_SIZE))}</div>
+                    <Button
+                      onClick={() => {
+                        const val = Number(purchasesJump || purchasesPage);
+                        goToPurchasesPage(val);
+                        setPurchasesJump("");
+                      }}
+                    >
+                      Go
+                    </Button>
+                  </div>
+
+                  <Button
+                    onClick={() => goToPurchasesPage(purchasesPage + 1)}
+                    disabled={!purchasesNext}
+                  >
+                    {isArabic ? "التالي" : "Next"}
+                  </Button>
+
+                  <Button
+                    onClick={() => goToPurchasesPage(Math.max(1, Math.ceil((purchasesCount || 0) / PAGE_SIZE)))}
+                    disabled={purchasesPage === Math.max(1, Math.ceil((purchasesCount || 0) / PAGE_SIZE))}
+                  >
+                    {isArabic ? "الأخيرة" : "Last"}
+                  </Button>
+                </div>
               </div>
             )}
           </TabsContent>
@@ -303,6 +405,70 @@ const OrdersPage = () => {
                 ))}
               </div>
             )}
+            {salesCount > 0 && (
+              <div className="flex flex-col items-center mt-6 gap-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => goToSalesPage(1)}
+                    disabled={salesPage === 1}
+                  >
+                    {isArabic ? "الأولى" : "First"}
+                  </Button>
+
+                  <Button
+                    onClick={() => goToSalesPage(salesPage - 1)}
+                    disabled={!salesPrev}
+                  >
+                    {isArabic ? "السابق" : "Previous"}
+                  </Button>
+
+                  <div className="flex items-center gap-2 px-3">
+                    <div className="text-sm text-gray-600">
+                      {isArabic ? "صفحة" : "Page"}
+                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={Math.max(1, Math.ceil((salesCount || 0) / PAGE_SIZE))}
+                      value={salesJump || salesPage}
+                      onChange={(e) => setSalesJump(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const val = Number(salesJump || salesPage);
+                          goToSalesPage(val);
+                          setSalesJump("");
+                        }
+                      }}
+                      className="w-20 p-1 border rounded text-center"
+                    />
+                    <div className="text-sm text-gray-600">/ {Math.max(1, Math.ceil((salesCount || 0) / PAGE_SIZE))}</div>
+                    <Button
+                      onClick={() => {
+                        const val = Number(salesJump || salesPage);
+                        goToSalesPage(val);
+                        setSalesJump("");
+                      }}
+                    >
+                      Go
+                    </Button>
+                  </div>
+
+                  <Button
+                    onClick={() => goToSalesPage(salesPage + 1)}
+                    disabled={!salesNext}
+                  >
+                    {isArabic ? "التالي" : "Next"}
+                  </Button>
+
+                  <Button
+                    onClick={() => goToSalesPage(Math.max(1, Math.ceil((salesCount || 0) / PAGE_SIZE)))}
+                    disabled={salesPage === Math.max(1, Math.ceil((salesCount || 0) / PAGE_SIZE))}
+                  >
+                    {isArabic ? "الأخيرة" : "Last"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -311,5 +477,4 @@ const OrdersPage = () => {
     </div>
   );
 };
-
 export default OrdersPage;

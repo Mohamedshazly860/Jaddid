@@ -5,6 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.utils import timezone
@@ -26,6 +27,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    class OrdersPagination(PageNumberPagination):
+        page_size = 10
+
+    pagination_class = OrdersPagination
     lookup_field = 'order_id'
     lookup_url_kwarg = 'order_id'
 
@@ -289,6 +294,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     def my_orders(self, request):
         """get current user's order as buyer"""
         orders = Order.objects.filter(buyer=request.user).order_by('-created_at')
+        page = self.paginate_queryset(orders)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(orders, many=True)
         return Response(serializer.data)
     
@@ -297,6 +307,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     def seller_orders(self, request):
         """Get current user's order as seller"""
         orders = Order.objects.filter(seller=request.user).order_by('-created_at')
+        page = self.paginate_queryset(orders)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(orders, many=True)
         return Response(serializer.data)
     

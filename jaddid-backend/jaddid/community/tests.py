@@ -56,6 +56,8 @@ class ReviewAPITest(APITestCase):
     def test_create_review(self):
         data = {
             'target_user': self.user2.id,
+            'order_id': str(uuid.uuid4()),
+            'product_id': str(uuid.uuid4()),
             'rating': 4,
             'comment': 'Good job!'
         }
@@ -64,6 +66,56 @@ class ReviewAPITest(APITestCase):
         self.assertEqual(Review.objects.count(), 1)
         review = Review.objects.first()
         self.assertEqual(review.reviewer, self.user1)
+        self.assertEqual(str(review.order_id), data['order_id'])
+        self.assertEqual(str(review.product_id), data['product_id'])
+
+    def test_create_multiple_reviews_same_product_different_orders(self):
+        product_id = str(uuid.uuid4())
+        data1 = {
+            'target_user': self.user2.id,
+            'order_id': str(uuid.uuid4()),
+            'product_id': product_id,
+            'rating': 5,
+            'comment': 'Great service!'
+        }
+        data2 = {
+            'target_user': self.user2.id,
+            'order_id': str(uuid.uuid4()),
+            'product_id': product_id,
+            'rating': 4,
+            'comment': 'Still good.'
+        }
+
+        response1 = self.client.post('/api/community/reviews/', data1)
+        response2 = self.client.post('/api/community/reviews/', data2)
+
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Review.objects.count(), 2)
+
+    def test_duplicate_review_same_order_and_product_is_blocked(self):
+        order_id = str(uuid.uuid4())
+        product_id = str(uuid.uuid4())
+        Review.objects.create(
+            reviewer=self.user1,
+            target_user=self.user2,
+            order_id=order_id,
+            product_id=product_id,
+            rating=5,
+            comment='Excellent'
+        )
+
+        data = {
+            'target_user': self.user2.id,
+            'order_id': order_id,
+            'product_id': product_id,
+            'rating': 5,
+            'comment': 'Excellent'
+        }
+        response = self.client.post('/api/community/reviews/', data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('You have already reviewed this product for this order.', str(response.data))
 
     def test_list_reviews(self):
         Review.objects.create(reviewer=self.user1, target_user=self.user2, rating=3, comment='Okay')

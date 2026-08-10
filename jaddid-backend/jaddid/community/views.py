@@ -19,7 +19,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['rating', 'target_user', 'product_id']
+    filterset_fields = ['rating', 'target_user', 'product_id', 'order_id']
     ordering_fields = ['rating', 'created_at']
 
     def perform_create(self, serializer):

@@ -13,6 +13,9 @@ class Review(models.Model):
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('reviewer', 'order_id', 'product_id')
+
     def __str__(self):
         return f"Review by {self.reviewer} for {self.target_user} - {self.rating}"
 

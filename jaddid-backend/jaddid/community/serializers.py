@@ -6,19 +6,21 @@ User = get_user_model()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    order_id = serializers.UUIDField(required=True)
+    product_id = serializers.UUIDField(required=True)
     reviewer = serializers.StringRelatedField(read_only=True)
     reviewer_name = serializers.CharField(source='reviewer.get_full_name', read_only=True)
     target_user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        required=True, 
-        allow_null=False 
+        required=True,
+        allow_null=False
     )
 
     class Meta:
         model = Review
         fields = [
             'id', 'reviewer', 'reviewer_name', 'target_user',
-            'order_id', 'product_id', 'rating', 'comment', 'created_at', 'product_id'
+            'order_id', 'product_id', 'rating', 'comment', 'created_at'
         ]
         read_only_fields = ('reviewer', 'reviewer_name', 'created_at')
         ref_name = "CommunityReview"

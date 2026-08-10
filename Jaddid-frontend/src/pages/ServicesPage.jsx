@@ -518,36 +518,6 @@ const ServicesPage = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 px-4 bg-gradient-to-br from-[#FFF8F0] via-white to-[#E8F3E8]">
-        <div className="container mx-auto max-w-4xl text-center space-y-6">
-          <Award className="w-14 h-14 mx-auto text-[#F0A84D]" />
-          <h2 className={`text-4xl md:text-5xl font-bold text-[#2D4F2B] ${isArabic ? 'font-arabic' : 'font-primary'}`}>
-            {isArabic ? 'جاهز للبدء؟' : 'Ready to get started?'}
-          </h2>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            {isArabic
-              ? 'انضم إلى آلاف المستخدمين والشركاء الذين يحولون التدوير إلى قيمة ملموسة.'
-              : 'Join thousands turning recycling into measurable value.'}
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button
-              onClick={() => navigate('/register')}
-              className="bg-[#2D4F2B] hover:bg-[#708A58] text-white px-10 py-4 rounded-full text-lg shadow-lg"
-            >
-              {isArabic ? 'إنشاء حساب' : 'Create account'}
-              <ArrowRight className={`w-5 h-5 ml-2 ${isArabic ? 'rotate-180' : ''}`} />
-            </Button>
-            <Button
-              onClick={() => navigate('/marketplace')}
-              className="bg-[#F0A84D] hover:bg-[#F0A84D]/90 text-white px-10 py-4 rounded-full text-lg shadow-lg"
-            >
-              {isArabic ? 'تصفح السوق' : 'Browse marketplace'}
-            </Button>
-          </div>
-        </div>
-      </section>
-
       <Footer />
     </div>
   );

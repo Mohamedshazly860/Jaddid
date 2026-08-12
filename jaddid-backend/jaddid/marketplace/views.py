@@ -698,6 +698,21 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.status = 'completed'
         order.completed_at = timezone.now()
         order.save()
+        # Notify the buyer that the order is completed
+        try:
+            NotificationService.create_notification(
+                user=order.buyer,
+                notification_type='order',
+                title_en='Order Completed',
+                title_ar='تم إتمام الطلب',
+                msg_en=f'Your order #{order.id} has been marked as completed.',
+                msg_ar=f'تم إتمام طلبك رقم {order.id}.',
+                order_id=order.id,
+                product_id=getattr(order.product, 'id', None)
+            )
+        except Exception:
+            # Don't block the response if notification fails
+            pass
         
         # Update product status if quantity is depleted
         product = order.product

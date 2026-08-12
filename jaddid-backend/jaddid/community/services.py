@@ -46,6 +46,12 @@ class NotificationService:
             }
         )
 
+        # Invalidate unread count cache for the user
+        try:
+            cache.delete(f'notification_count_{user.id}')
+        except Exception:
+            pass
+
         # Send push notification if user is offline
         NotificationService.send_push_notification(user, title_en, msg_en, notification.id)
 

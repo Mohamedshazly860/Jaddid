@@ -737,11 +737,6 @@ const OrderTrackingPage = () => {
                               ? "السائق في الطريق إليك"
                               : "Courier is on the way"}
                           </p>
-                          <p className="text-xs text-green-700">
-                            {isArabic
-                              ? "يتم التحديث كل 5 ثواني"
-                              : "Updates every 5 seconds"}
-                          </p>
                         </div>
                       </div>
                       {tracking?.latest_location?.distance_remaining && (

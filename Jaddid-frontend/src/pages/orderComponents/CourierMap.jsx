@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -22,20 +22,24 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-const MapResizer = ({ center }) => {
+const MapResizer = () => {
   const map = useMap();
+
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       map.invalidateSize();
-      if (center) map.panTo(center);
     }, 500);
-  }, [map, center]);
+
+    return () => clearTimeout(timeout);
+  }, [map]);
+
   return null;
 };
 
 const CourierMap = ({ tracking, customerLat, customerLng, isArabic }) => {
   const [courierPosition, setCourierPosition] = useState(null);
   const [route, setRoute] = useState([]);
+  const initialCenterRef = useRef(null);
 
   useEffect(() => {
     if (tracking?.latest_location) {
@@ -43,8 +47,23 @@ const CourierMap = ({ tracking, customerLat, customerLng, isArabic }) => {
         tracking.latest_location.latitude,
         tracking.latest_location.longitude,
       ];
-      setCourierPosition(newPos);
-      setRoute((prev) => [...prev, newPos]);
+      setCourierPosition((prevPos) => {
+        if (!prevPos || prevPos[0] !== newPos[0] || prevPos[1] !== newPos[1]) {
+          return newPos;
+        }
+        return prevPos;
+      });
+      setRoute((prev) => {
+        const lastPoint = prev[prev.length - 1];
+        if (
+          !lastPoint ||
+          lastPoint[0] !== newPos[0] ||
+          lastPoint[1] !== newPos[1]
+        ) {
+          return [...prev, newPos];
+        }
+        return prev;
+      });
     }
   }, [tracking]);
 
@@ -64,10 +83,15 @@ const CourierMap = ({ tracking, customerLat, customerLng, isArabic }) => {
   }
 
   const customerPosition = [customerLat, customerLng];
-  const center = [
-    (courierPosition[0] + customerPosition[0]) / 2,
-    (courierPosition[1] + customerPosition[1]) / 2,
-  ];
+
+  if (!initialCenterRef.current) {
+    initialCenterRef.current = [
+      (courierPosition[0] + customerPosition[0]) / 2,
+      (courierPosition[1] + customerPosition[1]) / 2,
+    ];
+  }
+
+  const center = initialCenterRef.current;
 
   return (
     <Card
@@ -92,6 +116,13 @@ const CourierMap = ({ tracking, customerLat, customerLng, isArabic }) => {
       </CardHeader>
 
       <CardContent className="p-0 relative h-[450px] w-full bg-gray-100">
+        <style>{`
+          .leaflet-marker-icon,
+          .leaflet-marker-shadow {
+            transition: transform 0.7s ease-in-out, left 0.7s ease-in-out, top 0.7s ease-in-out !important;
+            will-change: transform;
+          }
+        `}</style>
         <MapContainer
           center={center}
           zoom={13}
@@ -148,7 +179,7 @@ const CourierMap = ({ tracking, customerLat, customerLng, isArabic }) => {
             opacity={0.4}
           />
 
-          <MapResizer center={center} />
+          <MapResizer />
         </MapContainer>
 
         {/* Floating Info Card (Uber Style Overlay) */}

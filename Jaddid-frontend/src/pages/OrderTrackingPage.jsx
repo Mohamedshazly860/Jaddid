@@ -1,5 +1,5 @@
 // src/pages/OrderTrackingPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Navbar from "@/components/landing/Navbar";
@@ -69,6 +69,7 @@ const OrderTrackingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSimulationTriggered, setIsSimulationTriggered] = useState(false);
+  const initialMapCenterRef = useRef(null);
 
   const statusSteps = [
     {
@@ -306,6 +307,15 @@ const OrderTrackingPage = () => {
   const courierInfo = getCourierInfo();
   const courierLocation = getCourierLocation();
   const destinationLocation = getDestinationLocation();
+
+  if (courierLocation && !initialMapCenterRef.current) {
+    initialMapCenterRef.current = [courierLocation.lat, courierLocation.lng];
+  }
+
+  const mapCenter = initialMapCenterRef.current || [
+    courierLocation?.lat ?? 0,
+    courierLocation?.lng ?? 0,
+  ];
 
   // Courier avatar SVG as JSX. Accepts an aria label for accessibility.
   const courierAvatarSvg = (label) => (
@@ -666,11 +676,17 @@ const OrderTrackingPage = () => {
                     className="rounded-lg overflow-hidden border-2 border-gray-200 relative"
                     style={{ height: "500px", zIndex: 0 }}
                   >
+                    <style>{`
+                      .leaflet-marker-icon,
+                      .leaflet-marker-shadow {
+                        transition: transform 0.7s ease-in-out, left 0.7s ease-in-out, top 0.7s ease-in-out !important;
+                        will-change: transform;
+                      }
+                    `}</style>
                     <MapContainer
-                      center={[courierLocation.lat, courierLocation.lng]}
+                      center={mapCenter}
                       zoom={13}
                       style={{ height: "100%", width: "100%" }}
-                      key={`${courierLocation.lat}-${courierLocation.lng}`}
                     >
                       <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

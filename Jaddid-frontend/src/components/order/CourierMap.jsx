@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -25,10 +25,17 @@ const CourierMap = ({ order, trackingData, isArabic }) => {
   // Extract courier coordinates from order data
   const courierLat = trackingData?.latest_location?.latitude || order?.courier_details?.current_lat;
   const courierLng = trackingData?.latest_location?.longitude || order?.courier_details?.current_lng;
+  const initialMapCenterRef = useRef(null);
   
   // Extract customer coordinates from order delivery address or default
   const customerLat = order?.delivery_lat || 30.0444; // Cairo default
   const customerLng = order?.delivery_lng || 31.2357;
+
+  if (courierLat && courierLng && !initialMapCenterRef.current) {
+    initialMapCenterRef.current = [courierLat, courierLng];
+  }
+
+  const mapCenter = initialMapCenterRef.current || [courierLat ?? 0, courierLng ?? 0];
 
   // If courier coordinates are missing, show loading state
   if (!courierLat || !courierLng) {
@@ -51,10 +58,9 @@ const CourierMap = ({ order, trackingData, isArabic }) => {
   return (
     <div className="h-[400px] w-full rounded-2xl overflow-hidden shadow-inner border relative">
       <MapContainer
-        center={[courierLat, courierLng]}
+        center={mapCenter}
         zoom={13}
         style={{ height: "100%", width: "100%" }}
-        key={`${courierLat}-${courierLng}`}
       >
         <TileLayer 
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -404,17 +404,3 @@ def get_available_couriers(request):
         'count': couriers.count(),
         'couriers': serializer.data
     }, status=status.HTTP_200_OK)
-
-
-# def assign_nearest_courier(order):
-#     # Logic: Find active courier with no current assignment
-#     # This is a simple version; real apps use GeoDjango for 'nearest'
-#     available_courier = Courier.objects.filter(is_active=True).first()
-    
-#     if available_courier:
-#         assignment = CourierAssignment.objects.create(
-#             order=order,
-#             courier=available_courier
-#         )
-#         return assignment
-#     return None

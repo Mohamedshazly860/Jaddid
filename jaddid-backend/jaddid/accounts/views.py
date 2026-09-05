@@ -437,12 +437,3 @@ def get_role_choices(request):
         'roles': choices
     }, status=status.HTTP_200_OK)
 
-
-# Temporary debug endpoint to verify CSRF behavior
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def debug_no_csrf(request):
-    """Return OK to test whether CSRF is blocking POSTs."""
-    return Response({'ok': True, 'method': request.method}, status=status.HTTP_200_OK)
-

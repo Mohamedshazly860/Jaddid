@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     'orders',
     'logistics',
     'community',
-    'chatbot',
 ]
 
 MIDDLEWARE = [

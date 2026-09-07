@@ -23,6 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL')
+OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 
 # Quick-start development settings - unsuitable for production
@@ -60,6 +63,7 @@ INSTALLED_APPS = [
     'orders',
     'logistics',
     'community',
+    'ai_assistant',
 ]
 
 MIDDLEWARE = [

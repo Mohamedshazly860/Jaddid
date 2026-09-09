@@ -1,4 +1,4 @@
-"""OpenRouter-backed language model service.
+"""Groq-backed language model service.
 
 LangChain imports are intentionally contained in this module so views can use
 only :class:`LLMService`.
@@ -9,15 +9,12 @@ from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
 
-# OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
-
-
 def get_llm() -> ChatOpenAI:
-    """Create a ChatOpenAI client configured for OpenRouter."""
+    """Create a ChatOpenAI client configured for Groq's compatible API."""
     return ChatOpenAI(
-        model=settings.OPENROUTER_MODEL,
-        api_key=settings.OPENROUTER_API_KEY,
-        base_url=settings.OPENROUTER_BASE_URL,
+        model=settings.GROQ_MODEL,
+        api_key=settings.GROQ_API_KEY,
+        base_url=settings.GROQ_BASE_URL,
     )
 
 

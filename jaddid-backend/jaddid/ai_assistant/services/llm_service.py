@@ -5,7 +5,7 @@ only :class:`LLMService`.
 """
 
 from django.conf import settings
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_openai import ChatOpenAI
 
 
@@ -22,6 +22,31 @@ class LLMService:
     """Small application-facing wrapper around the configured LLM."""
 
     def chat(self, message: str) -> str:
-        """Send a user message and return the model response as plain text."""
-        response = get_llm().invoke([HumanMessage(content=message)])
+        """Return an answer, executing a requested marketplace search if needed."""
+        # Importing lazily prevents a cycle while ``ai_assistant.tools`` imports
+        # the marketplace search service.
+        from ..tools import search_items
+
+        llm = get_llm().bind_tools([search_items])
+        messages = [HumanMessage(content=message)]
+        response = llm.invoke(messages)
+
+        if not response.tool_calls:
+            return str(response.content)
+
+        messages.append(response)
+        for tool_call in response.tool_calls:
+            if tool_call["name"] == search_items.name:
+                tool_result = search_items.invoke(tool_call["args"])
+            else:
+                tool_result = "Requested tool is unavailable."
+
+            messages.append(
+                ToolMessage(
+                    content=str(tool_result),
+                    tool_call_id=tool_call["id"],
+                )
+            )
+
+        response = llm.invoke(messages)
         return str(response.content)

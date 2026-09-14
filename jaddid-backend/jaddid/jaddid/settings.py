@@ -29,6 +29,15 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY') or os.getenv('OPENROUTER_API_KEY')
 GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-20b')
 GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
 
+# MongoDB Atlas Vector Search configuration for the AI assistant RAG service.
+MONGODB_URI = os.getenv('MONGODB_URI')
+MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME')
+MONGODB_COLLECTION = os.getenv('MONGODB_COLLECTION')
+EMBEDDING_MODEL = os.getenv(
+    'EMBEDDING_MODEL',
+    'sentence-transformers/all-MiniLM-L6-v2',
+)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com /en/4.2/howto/deployment/checklist/

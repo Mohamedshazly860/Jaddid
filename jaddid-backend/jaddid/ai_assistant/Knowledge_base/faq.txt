@@ -1,0 +1,55 @@
+Frequently Asked Questions
+
+About the Store
+
+What can I do on this website?
+
+The website allows customers to browse products, search for products, view product details, compare available options, and place orders. Customers can also access information about shipping, returns, warranties, and other store policies through the platform.
+
+How can I find a product?
+
+You can browse products by category or use the product search functionality. You can also provide the chatbot with requirements such as product type, preferred brand, price range, color, or other available characteristics. The chatbot can use the available product catalog to help identify suitable products.
+
+Can the chatbot recommend products?
+
+Yes. The chatbot can help recommend products based on the requirements you provide. For example, you can describe your intended use, preferred price range, or desired characteristics. Recommendations are based on the product information available in the store.
+
+Can I ask about a specific product?
+
+Yes. You can ask about a product's available information, such as its price, description, category, characteristics, or availability, depending on the information provided in the product catalog.
+
+How do I know whether a product is available?
+
+Product availability is based on the current information maintained by the store. When available inventory information is provided by the application, the chatbot can use it to help determine whether a product is available.
+
+How can I place an order?
+
+Customers can select products, add them to their cart, provide the required order information, and complete the checkout process through the website. The exact checkout steps may depend on the application's current implementation.
+
+Can I ask about my order?
+
+Authenticated customers may be able to access order-related information through the application. The chatbot should only provide order information that the authenticated customer is authorized to access.
+
+How long does shipping take?
+
+Shipping times depend on the customer's location, the selected shipping method, product availability, and other operational factors. For detailed shipping rules, refer to the Shipping Policy.
+
+Can I return a product?
+
+Returns are subject to the store's Return Policy. Eligibility may depend on factors such as the condition of the product, the time since delivery, and the type of product.
+
+What if I receive a damaged or incorrect product?
+
+If a product arrives damaged, defective, or different from the ordered item, the customer should contact the store through the available support channel and provide the relevant order information. The support team can then review the issue and determine the appropriate resolution.
+
+Where can I find warranty information?
+
+Warranty coverage depends on the product and the applicable warranty terms. Customers should review the product information or contact the store for product-specific warranty details.
+
+Can I change my order after placing it?
+
+Order changes may depend on the current order status. Once an order has entered processing or shipping, changes may no longer be possible. Customers should contact support as soon as possible if an order needs to be changed.
+
+What should I do if I cannot find the information I need?
+
+If the requested information is not available in the product catalog or knowledge base, the chatbot should clearly state that it does not have enough information rather than inventing an answer. Customers can contact the store's support team for additional assistance.

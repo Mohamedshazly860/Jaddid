@@ -1,0 +1,67 @@
+How It Works
+
+Overview
+
+The website provides an online marketplace where customers can browse available products, discover products that match their needs, and place orders through the application.
+
+Browsing Products
+
+Customers can browse the product catalog and explore products by category or other available filters. Each product may contain information such as its name, description, price, category, characteristics, and availability.
+
+The information displayed for a product is based on the data maintained by the application.
+
+Searching for Products
+
+Customers can search for products using the website's search functionality. Search criteria may include product names, categories, brands, prices, or other product attributes supported by the application.
+
+Customers can also describe what they are looking for to the AI assistant. The assistant can help identify relevant products based on the available catalog information.
+
+Product Recommendations
+
+The AI assistant can help customers narrow down product choices by considering requirements such as intended use, budget, preferred characteristics, or other relevant criteria.
+
+Recommendations are based on the information available to the assistant. The assistant should not claim that a product has a feature or characteristic when that information is not available in the product data.
+
+Viewing Product Details
+
+Customers can open a product to view its available details before making a purchase decision.
+
+Product information may include price, description, category, available characteristics, and inventory status. The exact information depends on the product and the application's data.
+
+Adding Products to the Cart
+
+When a customer decides to purchase a product, the product can be added to the shopping cart through the website.
+
+The customer can review the selected products and quantities before proceeding to checkout.
+
+Placing an Order
+
+During checkout, the customer provides the information required to complete the order. This may include delivery information and other details required by the application.
+
+Before confirming the order, customers should review the selected products, quantities, delivery information, and applicable costs.
+
+Order Processing and Delivery
+
+After an order is confirmed, the store processes the order and prepares it for delivery.
+
+Customers may be able to track their order depending on the tracking functionality available in the application.
+
+Delivery times can vary based on location, product availability, processing time, and shipping conditions.
+
+After Delivery
+
+Customers should check the delivered products and contact the store if they receive a damaged, defective, or incorrect item.
+
+Eligible products may be returned according to the Return Policy.
+
+Customer Support
+
+If a customer cannot find the required information or encounters a problem with an order, they should use the support channels provided by the store.
+
+The AI assistant can provide information available in the store's knowledge base and product catalog, but it should not invent information that is unavailable.
+
+AI Assistant
+
+The AI assistant can help with product discovery, recommendations, product information, shipping questions, return-policy questions, and other supported store-related topics.
+
+For questions outside the store's supported domain, the assistant should politely explain that it is designed to help with the store and its services rather than general-purpose questions.

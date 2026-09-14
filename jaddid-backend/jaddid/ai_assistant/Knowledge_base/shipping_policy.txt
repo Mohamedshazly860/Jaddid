@@ -1,0 +1,55 @@
+Shipping Policy
+
+Overview
+
+The store provides delivery services for orders placed through the website. Shipping availability, delivery time, and shipping cost may depend on the customer's location, the products included in the order, and the selected delivery option.
+
+Shipping Information
+
+Customers should provide accurate delivery information when placing an order. This may include the recipient's name, phone number, address, and any other information required by the checkout process.
+
+Incorrect or incomplete delivery information may result in delays or unsuccessful delivery attempts. Customers are responsible for ensuring that the information submitted during checkout is accurate.
+
+Delivery Time
+
+Estimated delivery time can vary depending on the delivery location, product availability, order processing time, and shipping conditions.
+
+The estimated delivery time shown by the application should be considered an estimate rather than a guaranteed delivery date. Unexpected circumstances such as transportation problems, weather conditions, operational delays, or unusually high order volumes may affect delivery.
+
+Orders containing products that require additional processing may take longer to ship.
+
+Shipping Cost
+
+Shipping charges, when applicable, are calculated according to the store's current shipping rules. The cost may depend on factors such as delivery location, order characteristics, or the selected shipping method.
+
+Customers should review the shipping cost displayed during checkout before confirming an order.
+
+Order Processing
+
+After an order is placed, it may need to be reviewed and prepared before being handed to the delivery service. Processing time is separate from transportation time.
+
+An order may therefore require additional time before shipment begins, even when the delivery service itself is operating normally.
+
+Tracking
+
+When tracking information is available, customers may use the tracking information provided by the application to follow the status of their order.
+
+Tracking information may not appear immediately after an order is shipped because the delivery service may require time to register the shipment.
+
+Delivery Attempts
+
+The delivery service may make delivery attempts using the contact information and address provided by the customer. If delivery cannot be completed because the recipient is unavailable or the provided information is incorrect, additional action may be required.
+
+Customers should keep their phone available when expecting an important delivery.
+
+Delayed Orders
+
+If an order has exceeded its estimated delivery period, customers should check the order status and available tracking information. If the delay continues, they should contact the store's support team with their order information.
+
+Damaged Packages
+
+Customers should inspect delivered packages when possible. If a package appears significantly damaged, the customer should document the issue and contact the store's support team.
+
+Policy Limitations
+
+Shipping conditions may vary by product and destination. The information provided during checkout and the customer's order details take precedence over general shipping information in this document.

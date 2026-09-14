@@ -16,8 +16,6 @@ class RAGServiceError(Exception):
 class RAGService:
     """Retrieve relevant knowledge-base chunks from MongoDB Atlas."""
 
-    VECTOR_INDEX_NAME = "vector_index"
-
     def get_vector_store(self) -> MongoDBAtlasVectorSearch:
         """Build the configured Atlas vector store.
 
@@ -31,7 +29,7 @@ class RAGService:
             return MongoDBAtlasVectorSearch(
                 collection=collection,
                 embedding=embeddings,
-                index_name=self.VECTOR_INDEX_NAME,
+                index_name=settings.MONGODB_VECTOR_INDEX_NAME,
             )
         except PyMongoError as exc:
             raise RAGServiceError(

@@ -39,6 +39,8 @@ stripe==7.8.2
 langchain==0.3.25
 langchain-groq==0.2.4
 langchain-core==0.3.60
+langchain-community==0.3.25
+langchain-text-splitters==0.3.8
 
 langchain-mongodb==0.3.4
 pymongo==4.10.1

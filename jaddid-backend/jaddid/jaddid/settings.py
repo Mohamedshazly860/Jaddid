@@ -33,10 +33,12 @@ GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
 MONGODB_URI = os.getenv('MONGODB_URI')
 MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME')
 MONGODB_COLLECTION = os.getenv('MONGODB_COLLECTION')
+MONGODB_VECTOR_INDEX_NAME = os.getenv('MONGODB_VECTOR_INDEX_NAME', 'vector_index')
 EMBEDDING_MODEL = os.getenv(
     'EMBEDDING_MODEL',
     'sentence-transformers/all-MiniLM-L6-v2',
 )
+KNOWLEDGE_BASE_DIR = BASE_DIR / 'ai_assistant' / 'knowledge_base'
 
 
 # Quick-start development settings - unsuitable for production

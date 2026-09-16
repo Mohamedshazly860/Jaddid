@@ -31,6 +31,9 @@ class Command(BaseCommand):
             chunk_overlap=50,
         )
 
+        self.stdout.write("Clearing existing knowledge-base chunks...")
+        collection.delete_many({})
+
         total_chunks = 0
         failed_files = 0
         text_files = sorted(knowledge_base_dir.glob("*.txt"))

@@ -15,6 +15,15 @@ class RAGServiceError(Exception):
 
 class RAGService:
     """Retrieve relevant knowledge-base chunks from MongoDB Atlas."""
+    _embeddings = None
+
+    def _get_embeddings(self):
+        if RAGService._embeddings is None:
+            RAGService._embeddings = HuggingFaceEmbeddings(
+                model_name=settings.EMBEDDING_MODEL
+            )
+        return RAGService._embeddings
+
 
     def get_vector_store(self) -> MongoDBAtlasVectorSearch:
         """Build the configured Atlas vector store.
@@ -23,12 +32,11 @@ class RAGService:
         searching are also translated by :meth:`retrieve`.
         """
         try:
-            embeddings = HuggingFaceEmbeddings(model_name=settings.EMBEDDING_MODEL)
             client = MongoClient(settings.MONGODB_URI)
             collection = client[settings.MONGODB_DB_NAME][settings.MONGODB_COLLECTION]
             return MongoDBAtlasVectorSearch(
                 collection=collection,
-                embedding=embeddings,
+                embedding=self._get_embeddings(),
                 index_name=settings.MONGODB_VECTOR_INDEX_NAME,
             )
         except PyMongoError as exc:

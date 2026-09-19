@@ -6,11 +6,11 @@ only :class:`LLMService`.
 
 from django.conf import settings
 from langchain_core.messages import HumanMessage, ToolMessage
-from langchain_groq import chatGroq
+from langchain_groq import ChatGroq
 
-def get_llm() -> ChatOpenAI:
-    """Create a ChatOpenAI client configured for Groq's compatible API."""
-    return ChatOpenAI(
+def get_llm() -> ChatGroq:
+    """Create a ChatGroq client configured for Groq's compatible API."""
+    return ChatGroq(
         model=settings.GROQ_MODEL,
         api_key=settings.GROQ_API_KEY,
         base_url=settings.GROQ_BASE_URL,

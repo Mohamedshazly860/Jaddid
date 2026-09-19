@@ -36,7 +36,7 @@ MONGODB_COLLECTION = os.getenv('MONGODB_COLLECTION')
 MONGODB_VECTOR_INDEX_NAME = os.getenv('MONGODB_VECTOR_INDEX_NAME', 'vector_index')
 EMBEDDING_MODEL = os.getenv(
     'EMBEDDING_MODEL',
-    'sentence-transformers/all-MiniLM-L6-v2',
+    "BAAI/bge-small-en-v1.5",
 )
 KNOWLEDGE_BASE_DIR = BASE_DIR / 'ai_assistant' / 'knowledge_base'
 

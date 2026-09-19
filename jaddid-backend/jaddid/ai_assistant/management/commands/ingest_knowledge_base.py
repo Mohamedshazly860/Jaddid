@@ -5,7 +5,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from langchain_community.document_loaders import TextLoader
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pymongo import MongoClient
@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 f"Knowledge-base directory does not exist: {knowledge_base_dir}"
             )
 
-        embeddings = HuggingFaceEmbeddings(model_name=settings.EMBEDDING_MODEL)
+        embeddings = FastEmbedEmbeddings(model_name=settings.EMBEDDING_MODEL)
         client = MongoClient(settings.MONGODB_URI)
         collection = client[settings.MONGODB_DB_NAME][settings.MONGODB_COLLECTION]
         splitter = RecursiveCharacterTextSplitter(

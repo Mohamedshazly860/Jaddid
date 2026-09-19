@@ -38,6 +38,9 @@ services:
       context: ./jaddid-backend
       dockerfile: Dockerfile
     container_name: jaddid_backend
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: unless-stopped
     env_file:
       - ./jaddid-backend/.env

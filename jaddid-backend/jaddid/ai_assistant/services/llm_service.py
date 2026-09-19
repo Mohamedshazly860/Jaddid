@@ -6,8 +6,7 @@ only :class:`LLMService`.
 
 from django.conf import settings
 from langchain_core.messages import HumanMessage, ToolMessage
-from langchain_openai import ChatOpenAI
-
+from langchain_groq import chatGroq
 
 def get_llm() -> ChatOpenAI:
     """Create a ChatOpenAI client configured for Groq's compatible API."""

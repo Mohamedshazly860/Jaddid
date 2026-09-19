@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from django.conf import settings
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
@@ -19,7 +19,7 @@ class RAGService:
 
     def _get_embeddings(self):
         if RAGService._embeddings is None:
-            RAGService._embeddings = HuggingFaceEmbeddings(
+            RAGService._embeddings = FastEmbedEmbeddings(
                 model_name=settings.EMBEDDING_MODEL
             )
         return RAGService._embeddings

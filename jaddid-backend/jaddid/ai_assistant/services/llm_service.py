@@ -5,7 +5,7 @@ only :class:`LLMService`.
 """
 
 from django.conf import settings
-from langchain_core.messages import HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage
 from langchain_groq import ChatGroq
 
 def get_llm() -> ChatGroq:
@@ -18,34 +18,14 @@ def get_llm() -> ChatGroq:
 
 
 class LLMService:
-    """Small application-facing wrapper around the configured LLM."""
+    """Application-facing wrapper around the assistant LangGraph."""
 
     def chat(self, message: str) -> str:
-        """Return an answer, executing a requested marketplace search if needed."""
-        # Importing lazily prevents a cycle while ``ai_assistant.tools`` imports
-        # the marketplace search service.
-        from ..tools import search_items
+        """Return the final graph response as the view's expected plain string."""
+        # Import lazily because the graph imports ``get_llm`` from this module.
+        from ..agent.graph import build_graph
 
-        llm = get_llm().bind_tools([search_items])
-        messages = [HumanMessage(content=message)]
-        response = llm.invoke(messages)
-
-        if not response.tool_calls:
-            return str(response.content)
-
-        messages.append(response)
-        for tool_call in response.tool_calls:
-            if tool_call["name"] == search_items.name:
-                tool_result = search_items.invoke(tool_call["args"])
-            else:
-                tool_result = "Requested tool is unavailable."
-
-            messages.append(
-                ToolMessage(
-                    content=str(tool_result),
-                    tool_call_id=tool_call["id"],
-                )
-            )
-
-        response = llm.invoke(messages)
-        return str(response.content)
+        result = build_graph().invoke(
+            {"messages": [HumanMessage(content=message)], "rag_context": ""}
+        )
+        return str(result["messages"][-1].content)

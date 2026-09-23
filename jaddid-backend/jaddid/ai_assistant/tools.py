@@ -92,7 +92,6 @@ def _format_results(results: list[dict]) -> str:
 
 @tool(
     args_schema=SearchItemsInput,
-    handle_validation_error="Invalid search arguments. Please provide valid search filters.",
 )
 def search_items(
     query: str | None = None,

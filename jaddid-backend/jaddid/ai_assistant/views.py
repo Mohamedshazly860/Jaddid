@@ -30,4 +30,4 @@ class ChatView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        return Response({'response': response}, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)

@@ -46,14 +46,17 @@ class ChatViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         mock_chat.assert_not_called()
 
-    @patch('ai_assistant.services.llm_service.LLMService.chat', return_value='How can I help?')
+    @patch(
+        'ai_assistant.services.llm_service.LLMService.chat',
+        return_value={'response': 'How can I help?', 'products': []},
+    )
     def test_valid_request_returns_llm_response(self, mock_chat):
         self.authenticate()
 
         response = self.client.post(self.endpoint, {'message': 'Hello'}, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'response': 'How can I help?'})
+        self.assertEqual(response.data, {'response': 'How can I help?', 'products': []})
         mock_chat.assert_called_once_with('Hello')
 
     @patch(

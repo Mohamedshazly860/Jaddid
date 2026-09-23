@@ -5,7 +5,7 @@ only :class:`LLMService`.
 """
 
 from django.conf import settings
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_groq import ChatGroq
 
 def get_llm() -> ChatGroq:
@@ -20,8 +20,8 @@ def get_llm() -> ChatGroq:
 class LLMService:
     """Application-facing wrapper around the assistant LangGraph."""
 
-    def chat(self, message: str) -> str:
-        """Return the final graph response as the view's expected plain string."""
+    def chat(self, message: str) -> dict:
+        """Return the assistant response together with products found."""
         # Import lazily because the graph imports ``get_llm`` from this module.
         from ..agent.graph import build_graph
 
@@ -32,4 +32,17 @@ class LLMService:
                 "found_products": [],
             }
         )
-        return str(result["messages"][-1].content)
+        response_message = next(
+            (
+                graph_message
+                for graph_message in reversed(result.get("messages", []))
+                if isinstance(graph_message, AIMessage)
+            ),
+            None,
+        )
+        response_text = str(response_message.content) if response_message else ""
+        found_products = result.get("found_products", []) or []
+        return {
+            "response": response_text,
+            "products": found_products,
+        }

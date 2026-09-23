@@ -126,12 +126,14 @@ class ProductSearchService:
         return [
             {
                 "title": product["title"],
+                "id": str(product["id"]),
                 "description": product["description"],
                 "price": product["price"],
                 "condition": product["condition"],
                 "quantity": product["quantity"],
                 "location": product["location"],
                 "category": product["category__name"],
+                "type": "product",
             }
             for product in products.values(
                 "title",
@@ -150,6 +152,7 @@ class ProductSearchService:
         return [
             {
                 "title": material["title"],
+                "id": str(material["id"]),
                 "description": material["description"],
                 "price_per_unit": material["price_per_unit"],
                 "unit": material["unit"],
@@ -158,6 +161,7 @@ class ProductSearchService:
                 "location": material["location"],
                 "material": material["material__name"],
                 "category": material["material__category__name"],
+                "type": "material",
             }
             for material in materials.values(
                 "title",

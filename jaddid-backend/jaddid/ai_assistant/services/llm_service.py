@@ -26,6 +26,10 @@ class LLMService:
         from ..agent.graph import build_graph
 
         result = build_graph().invoke(
-            {"messages": [HumanMessage(content=message)], "rag_context": ""}
+            {
+                "messages": [HumanMessage(content=message)],
+                "rag_context": "",
+                "found_products": [],
+            }
         )
         return str(result["messages"][-1].content)

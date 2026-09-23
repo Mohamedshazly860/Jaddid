@@ -22,7 +22,7 @@ class ChatView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            response = LLMService().chat(serializer.validated_data['message'])
+            result = LLMService().chat(serializer.validated_data['message'])
         except Exception:
             logger.exception('AI service request failed')
             return Response(
@@ -30,4 +30,4 @@ class ChatView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_200_OK)

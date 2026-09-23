@@ -135,6 +135,7 @@ class ProductSearchService:
             }
             for product in products.values(
                 "title",
+                "id",
                 "description",
                 "price",
                 "condition",
@@ -160,6 +161,7 @@ class ProductSearchService:
             }
             for material in materials.values(
                 "title",
+                "id",
                 "description",
                 "price_per_unit",
                 "unit",

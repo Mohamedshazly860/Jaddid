@@ -50,6 +50,9 @@ class SearchItemsInput(BaseModel):
     )
 
 
+_last_search_results: list[dict] = []
+
+
 def _format_results(results: list[dict]) -> str:
     """Convert allowlisted search data into concise text for the model."""
     if not results:
@@ -110,6 +113,7 @@ def search_items(
     by item type, category, price, condition, or location. Results contain only
     public listing information and never seller contact details.
     """
+    global _last_search_results
     try:
         results = ProductSearchService().search(
             query=query,
@@ -121,6 +125,8 @@ def search_items(
             location=location,
             limit=limit,
         )
+        _last_search_results = results
         return _format_results(results)
     except Exception:
-        return "Unable to search marketplace items right now. Please try again later."
+        _last_search_results = []
+        return "Unable to search marketplace items right now."

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import re
 from typing import Annotated, TypedDict
 
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -45,54 +44,19 @@ def retrieve_context(state: AgentState) -> dict:
     }
 
 
-_PRODUCT_RESULT = re.compile(
-    r"(?:^|\n)\s*\d+\.\s+Product:\s*(?P<title>[^\n]+)(?P<fields>.*?)(?=\n\s*\d+\.\s+(?:Product|Material listing):|\Z)",
-    re.DOTALL,
-)
-
-
-def _parse_product_results(content: object) -> list[dict]:
-    """Parse the public product format returned by ``search_items``."""
-    text = str(content)
-    products = []
-    field_names = {
-        "Description": "description",
-        "Price": "price",
-        "Condition": "condition",
-        "Quantity available": "quantity",
-        "Location": "location",
-        "Category": "category",
-    }
-    for match in _PRODUCT_RESULT.finditer(text):
-        product = {"title": match.group("title").strip()}
-        for line in match.group("fields").splitlines():
-            line = line.strip()
-            if ":" not in line:
-                continue
-            label, value = (part.strip() for part in line.split(":", 1))
-            if label in field_names:
-                product[field_names[label]] = value
-        if len(product) == 1:
-            return []
-        products.append(product)
-    return products
-
-
 _tool_node = ToolNode([search_items])
 
 
 def execute_tools(state: AgentState) -> dict:
-    """Run marketplace tools and retain any product results for downstream use."""
-    result = _tool_node.invoke(state)
-    messages = result.get("messages", [])
-    last_message = messages[-1] if messages else None
-    if not isinstance(last_message, ToolMessage):
-        return {"messages": messages, "found_products": []}
-    try:
-        products = _parse_product_results(last_message.content)
-    except Exception:
-        products = []
-    return {"messages": messages, "found_products": products}
+    """Run marketplace tools before extracting their raw results."""
+    return _tool_node.invoke(state)
+
+
+def extract_products(state: AgentState) -> dict:
+    """Extract raw product data after tool execution."""
+    from .. import tools as search_tool
+
+    return {"found_products": list(search_tool._last_search_results)}
 
 
 def agent(state: AgentState) -> dict:
@@ -116,6 +80,7 @@ def build_graph():
     workflow.add_node("retrieve_context", retrieve_context)
     workflow.add_node("agent", agent)
     workflow.add_node("tools", execute_tools)
+    workflow.add_node("extract_products", extract_products)
 
     workflow.add_edge(START, "retrieve_context")
     workflow.add_edge("retrieve_context", "agent")
@@ -124,6 +89,7 @@ def build_graph():
         tools_condition,
         {"tools": "tools", END: END},
     )
-    workflow.add_edge("tools", "agent")
+    workflow.add_edge("tools", "extract_products")
+    workflow.add_edge("extract_products", "agent")
 
     return workflow.compile()

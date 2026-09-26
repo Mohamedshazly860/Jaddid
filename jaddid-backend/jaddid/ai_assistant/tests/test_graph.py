@@ -51,7 +51,7 @@ class AssistantGraphTests(SimpleTestCase):
 
     @patch("ai_assistant.agent.graph.RAGService.retrieve", return_value=[])
     @patch(
-        "ai_assistant.services.search_service.ProductSearchService.search",
+        "ai_assistant.agent.graph.ProductSearchService.search",
         return_value=[
             {
                 "title": "Recycled Bottle",

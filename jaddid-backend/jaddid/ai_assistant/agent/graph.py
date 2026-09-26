@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from typing import Annotated, TypedDict
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import tools_condition
 
 from ..services.llm_service import get_llm
 from ..services.rag_service import RAGService
-from ..tools import search_items
+from ..services.search_service import ProductSearchService
+from ..tools import SearchItemsInput, _format_results, search_items
 
 
 class AgentState(TypedDict):
@@ -44,19 +45,48 @@ def retrieve_context(state: AgentState) -> dict:
     }
 
 
-_tool_node = ToolNode([search_items])
+def execute_tools_and_capture(state: AgentState) -> dict:
+    """Execute tool calls and capture structured product data in state.
 
+    Replaces ToolNode + extract_products with a single atomic node.
+    Products are stored directly in AgentState — no global side channel.
+    Each request has its own state so this is fully thread safe.
+    """
+    last_message = state["messages"][-1]
+    tool_messages = []
+    found_products = []
 
-def execute_tools(state: AgentState) -> dict:
-    """Run marketplace tools before extracting their raw results."""
-    return _tool_node.invoke(state)
+    for tool_call in last_message.tool_calls:
+        if tool_call["name"] == "search_items":
+            try:
+                validated = SearchItemsInput(**tool_call["args"])
+                results = ProductSearchService().search(
+                    query=validated.query,
+                    item_type=validated.item_type,
+                    category=validated.category,
+                    min_price=validated.min_price,
+                    max_price=validated.max_price,
+                    condition=validated.condition,
+                    location=validated.location,
+                    limit=validated.limit,
+                )
+                found_products = results
+                formatted = _format_results(results)
+            except Exception:
+                results = []
+                formatted = "Unable to search marketplace items right now."
 
+            tool_messages.append(
+                ToolMessage(
+                    content=formatted,
+                    tool_call_id=tool_call["id"],
+                )
+            )
 
-def extract_products(state: AgentState) -> dict:
-    """Extract raw product data after tool execution."""
-    from .. import tools as search_tool
-
-    return {"found_products": list(search_tool._last_search_results)}
+    return {
+        "messages": tool_messages,
+        "found_products": found_products,
+    }
 
 
 def agent(state: AgentState) -> dict:
@@ -79,8 +109,7 @@ def build_graph():
     workflow = StateGraph(AgentState)
     workflow.add_node("retrieve_context", retrieve_context)
     workflow.add_node("agent", agent)
-    workflow.add_node("tools", execute_tools)
-    workflow.add_node("extract_products", extract_products)
+    workflow.add_node("tools", execute_tools_and_capture)
 
     workflow.add_edge(START, "retrieve_context")
     workflow.add_edge("retrieve_context", "agent")
@@ -89,7 +118,6 @@ def build_graph():
         tools_condition,
         {"tools": "tools", END: END},
     )
-    workflow.add_edge("tools", "extract_products")
-    workflow.add_edge("extract_products", "agent")
+    workflow.add_edge("tools", "agent")
 
     return workflow.compile()

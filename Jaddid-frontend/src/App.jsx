@@ -31,8 +31,8 @@ import OrderTrackingPage from "./pages/OrderTrackingPage";
 // import Navbar from "./components/landing/Navbar";
 // import Footer from "./components/landing/Footer";
 
-// Chatbot Component
-import ChatbotWidget from "./components/chatbot/ChatbotWidget";
+// Chat Widget
+import ChatWidget from "./components/ChatWidget";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -87,8 +87,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            {/* Global Chatbot Widget */}
-            <ChatbotWidget />
+            <ChatWidget />
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>

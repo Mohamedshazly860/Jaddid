@@ -13,7 +13,6 @@ def get_llm() -> ChatGroq:
     return ChatGroq(
         model=settings.GROQ_MODEL,
         api_key=settings.GROQ_API_KEY,
-        base_url=settings.GROQ_BASE_URL,
     )
 
 

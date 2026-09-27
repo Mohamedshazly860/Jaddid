@@ -16,7 +16,8 @@ const ChatBox = ({
   return (
     <div
       dir={isArabic ? "rtl" : "ltr"}
-      className="chat-box-enter fixed bottom-24 right-6 z-50 flex h-[520px] w-[380px] flex-col overflow-hidden rounded-[16px] border border-[#B7DEC8] bg-white shadow-[0_8px_32px_rgba(45,106,79,0.15)] max-[640px]:h-[calc(100vh-120px)] max-[640px]:w-[calc(100vw-24px)]"
+      className="chat-box-enter absolute bottom-[calc(100%+12px)] right-0 z-50 flex h-[620px] w-[430px] flex-col overflow-hidden rounded-[18px] border border-[#B7DEC8] bg-white shadow-[0_12px_36px_rgba(45,106,79,0.18)]
+        max-[640px]:bottom-[calc(100%+8px)] max-[640px]:h-[calc(100vh-92px)] max-[640px]:w-[calc(100vw-24px)]"
     >
       <ChatHeader language={language} onClose={onClose} />
       <MessageList messages={messages} isLoading={isLoading} language={language} />

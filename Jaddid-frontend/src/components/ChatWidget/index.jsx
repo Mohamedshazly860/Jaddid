@@ -104,22 +104,24 @@ const ChatWidget = () => {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <ChatTooltip visible={tooltipVisible} language={language} />
-      <ChatIcon
-        isOpen={isOpen}
-        onToggle={() => setIsOpen((prev) => !prev)}
-        onHoverChange={setIsHoveringIcon}
-      />
-      {isOpen && (
-        <ChatBox
-          language={language}
-          messages={messages}
-          isLoading={isLoading}
-          inputValue={inputValue}
-          onInputChange={setInputValue}
-          onSend={handleSendMessage}
-          onClose={() => setIsOpen(false)}
+      <div className="relative">
+        <ChatIcon
+          isOpen={isOpen}
+          onToggle={() => setIsOpen((prev) => !prev)}
+          onHoverChange={setIsHoveringIcon}
         />
-      )}
+        {isOpen && (
+          <ChatBox
+            language={language}
+            messages={messages}
+            isLoading={isLoading}
+            inputValue={inputValue}
+            onInputChange={setInputValue}
+            onSend={handleSendMessage}
+            onClose={() => setIsOpen(false)}
+          />
+        )}
+      </div>
     </div>
   );
 };

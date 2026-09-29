@@ -1,15 +1,35 @@
 import { Link } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
-  const type = product?.type || "product";
-  const itemId = product?.id ?? product?.product_id ?? product?.material_id;
+  const rawType = String(
+    product?.type ?? product?.item_type ?? product?.listing_type ?? "product"
+  ).toLowerCase();
+  const routeType =
+    rawType === "material" ||
+    rawType === "materials" ||
+    rawType === "material_listing" ||
+    rawType === "material-listing"
+      ? "material"
+      : "product";
+
+  const itemId =
+    product?.id ??
+    product?.product_id ??
+    product?.material_id ??
+    product?.listing_id ??
+    product?.item_id;
+
   const title = product?.title || product?.name || "Item";
   const price = product?.price ?? product?.price_per_unit ?? 0;
   const condition = product?.condition || product?.status || "New";
-  const location = product?.location || product?.city || product?.seller_location || "Local";
+  const location =
+    product?.location ||
+    product?.city ||
+    product?.seller_location ||
+    "Local";
   const unit = product?.unit || "unit";
 
-  const href = type === "material" ? `/materials/${itemId}` : `/products/${itemId}`;
+  const href = itemId ? `/marketplace/${routeType}/${itemId}` : "/marketplace";
 
   return (
     <Link
@@ -20,7 +40,7 @@ const ProductCard = ({ product }) => {
 
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className="text-sm font-bold text-[#2D6A4F]">
-          {type === "material"
+          {routeType === "material"
             ? `${price} / ${unit}`
             : `${price}`}
         </span>

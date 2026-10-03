@@ -18,16 +18,54 @@ class ChatView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
         serializer = ChatInputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        message = serializer.validated_data['message']
+        conversation_id = serializer.validated_data.get('conversation_id')
+
+        if conversation_id:
+            # If a conversation ID is provided, we can retrieve the conversation and its messages
+            try:
+                conversation = Conversation.objects.get(id=conversation_id, user=request.user)
+            except Conversation.DoesNotExist:
+                conversation = Conversation.objects.create(user=request.user)
+        else:
+            conversation = Conversation.objects.create(user=request.user)
+
+
+        history = conversation.get_receent_messages(limit=20)
+
 
         try:
-            result = LLMService().chat(serializer.validated_data['message'])
+            result = LLMService().chat(message=message, history=history)
         except Exception:
             logger.exception('AI service request failed')
             return Response(
                 {'error': 'AI service unavailable'},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
+        
+        ConversationMessage.objects.create(
+            conversation=conversation,
+            role='user',
+            content=message,
+            products=[],
+        )
 
-        return Response(result, status=status.HTTP_200_OK)
+        ConversationMessage.objects.create(
+            conversation=conversation,
+            role='assistant',
+            content=result['response'],
+            products=result['products'],
+        )
+
+        conversation.save()
+
+        return Response(
+            'response': result['response'],
+            'products': result['products'],
+            'conversation_id': str(conversation.id),
+        )

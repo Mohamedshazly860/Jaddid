@@ -7,3 +7,12 @@ class ChatInputSerializer(serializers.Serializer):
     and ensure performance."""
 
     message = serializers.CharField(required=True, allow_blank=False, max_length=1000)
+    conversation_id = serializers.UUIDField(required=True, allow_null=True)
+
+
+
+class ChatOutputSerializer(serializers.Serializer):
+    """Validate the response from AI assistant"""
+    response = serializers.CharField()
+    products = serializers.ListField()
+    conversation_id = serializers.UUIDField()

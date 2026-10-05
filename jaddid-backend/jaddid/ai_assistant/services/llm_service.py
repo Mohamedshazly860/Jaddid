@@ -19,24 +19,33 @@ def get_llm() -> ChatGroq:
 class LLMService:
     """Application-facing wrapper around the assistant LangGraph."""
 
-    def chat(self, message: str) -> dict:
+    def chat(self, message: str, history: list = None) -> dict:
         """Return the assistant response together with products found."""
         # Import lazily because the graph imports ``get_llm`` from this module.
         from ..agent.graph import build_graph
+        from langchain_core.messages import AIMessage, HumanMessage
+
+        history_messages = []
+        if history:
+            for msg in history:
+                if msg.role == "user":
+                    history_messages.append(HumanMessage(content=msg.content))
+                elif msg.role == "assistant":
+                    history_messages.append(AIMessage(content=msg.content))
+
+        
+        history_messages.append(HumanMessage(content=message))
 
         result = build_graph().invoke(
             {
-                "messages": [HumanMessage(content=message)],
+                "messages": history_messages,
                 "rag_context": "",
                 "found_products": [],
             }
         )
         response_message = next(
-            (
-                graph_message
-                for graph_message in reversed(result.get("messages", []))
-                if isinstance(graph_message, AIMessage)
-            ),
+            (m for m in reversed(result.get("messages", []))
+            if isinstance(m, AIMessage)),
             None,
         )
         response_text = str(response_message.content) if response_message else ""

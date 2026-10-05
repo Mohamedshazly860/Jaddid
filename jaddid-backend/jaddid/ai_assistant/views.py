@@ -65,7 +65,7 @@ class ChatView(APIView):
         conversation.save()
 
         return Response(
-            'response': result['response'],
+            {'response': result['response'],
             'products': result['products'],
-            'conversation_id': str(conversation.id),
+            'conversation_id': str(conversation.id),}
         )

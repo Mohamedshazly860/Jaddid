@@ -41,6 +41,7 @@ const ChatWidget = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isHoveringIcon, setIsHoveringIcon] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [conversationId, setConversationId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
@@ -71,12 +72,18 @@ const ChatWidget = () => {
     try {
       const response = await api.post("/ai-assistant/chat/", {
         message: trimmedValue,
+        conversation_id: conversationId,
       });
+
+      const responseData = response?.data || {};
+      if (responseData?.conversation_id) {
+        setConversationId(responseData.conversation_id);
+      }
 
       const assistantMessage = createMessage(
         "assistant",
-        getAssistantReply(response?.data),
-        Array.isArray(response?.data?.products) ? response.data.products : []
+        getAssistantReply(responseData),
+        Array.isArray(responseData?.products) ? responseData.products : []
       );
 
       setMessages((prev) => [...prev, assistantMessage]);

@@ -56,8 +56,25 @@ class ChatViewTests(TestCase):
         response = self.client.post(self.endpoint, {'message': 'Hello'}, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'response': 'How can I help?', 'products': []})
-        mock_chat.assert_called_once_with('Hello')
+        self.assertIn('response', response.data)
+        self.assertEqual(response.data['response'], 'How can I help?')
+        self.assertEqual(response.data['products'], [])
+        self.assertIn('conversation_id', response.data)
+        mock_chat.assert_called_once_with(message='Hello', history=[])
+
+    @patch(
+        'ai_assistant.services.llm_service.LLMService.chat',
+        return_value={'response': 'How can I help?', 'products': []},
+    )
+    def test_missing_conversation_id_is_accepted(self, mock_chat):
+        self.authenticate()
+
+        response = self.client.post(self.endpoint, {'message': 'Hello'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('conversation_id', response.data)
+        self.assertTrue(response.data['conversation_id'])
+        mock_chat.assert_called_once_with(message='Hello', history=[])
 
     @patch(
         'ai_assistant.services.llm_service.LLMService.chat',
@@ -69,4 +86,4 @@ class ChatViewTests(TestCase):
         response = self.client.post(self.endpoint, {'message': 'Hello'}, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
-        mock_chat.assert_called_once_with('Hello')
+        mock_chat.assert_called_once_with(message='Hello', history=[])

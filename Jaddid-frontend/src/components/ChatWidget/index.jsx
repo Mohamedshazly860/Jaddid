@@ -70,10 +70,12 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post("/ai-assistant/chat/", {
+      const payload = {
         message: trimmedValue,
-        conversation_id: conversationId,
-      });
+        conversation_id: conversationId ?? null,
+      };
+
+      const response = await api.post("/ai-assistant/chat/", payload);
 
       const responseData = response?.data || {};
       if (responseData?.conversation_id) {

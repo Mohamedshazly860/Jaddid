@@ -1,3 +1,17 @@
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: jaddid_net
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+x-dns: &dns
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+
 services:
 
   # ─── PostgreSQL Database ───────────────────────────────────────────

@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from .models import Conversation, ConversationMessage
 from .serializers import ChatInputSerializer
 from .services import LLMService
+from .guardrail.scope_guardrail import ScopeGuardrail
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,16 @@ class ChatView(APIView):
 
         message = serializer.validated_data['message']
         conversation_id = serializer.validated_data.get('conversation_id')
+
+        guardrail_result = ScopeGuardrail.check(message)
+        if not guardrail_result['is_in_scope']:
+            return Response({
+                'response': guardrail_result['rejection_message'],
+                'products': [],
+                'conversation_id': str(conversation_id) if conversation_id else None,
+            })
+
+
 
         if conversation_id:
             # If a conversation ID is provided, we can retrieve the conversation and its messages

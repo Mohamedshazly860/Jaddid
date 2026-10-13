@@ -38,3 +38,13 @@ class ScopeGuardrail:
                 dtype=np.float32,
             )
         return cls._scope_embeddings
+
+    @staticmethod
+    def _cosine_similarity(vec_a, vec_b) -> float:
+        """Compute cosine similarity between two vectors."""
+        a = np.asarray(vec_a, dtype=np.float32)
+        b = np.asarray(vec_b, dtype=np.float32)
+        denominator = np.linalg.norm(a) * np.linalg.norm(b)
+        if denominator == 0:
+            return 0.0
+        return float(np.dot(a, b) / denominator)

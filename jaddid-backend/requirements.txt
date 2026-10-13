@@ -44,3 +44,4 @@ langchain-mongodb==0.6.2
 pymongo==4.10.1
 fastembed==0.4.2
 langgraph==0.2.74
+numpy==1.26.4

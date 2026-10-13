@@ -5,8 +5,11 @@ is within the supported domain before passing it to the agent.
 No second LLM call is made — classification is purely embedding-based.
 """
 
+import numpy as np
 from django.conf import settings
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+
+from .scope_examples import IN_SCOPE_EXAMPLES
 
 
 class ScopeGuardrail:
@@ -24,3 +27,14 @@ class ScopeGuardrail:
                 model_name=settings.EMBEDDING_MODEL
             )
         return cls._embeddings_model
+
+    @classmethod
+    def _get_scope_embeddings(cls):
+        """Return cached embeddings for the supported in-scope examples."""
+        if cls._scope_embeddings is None:
+            model = cls._get_embeddings_model()
+            cls._scope_embeddings = np.asarray(
+                model.embed_documents(IN_SCOPE_EXAMPLES),
+                dtype=np.float32,
+            )
+        return cls._scope_embeddings

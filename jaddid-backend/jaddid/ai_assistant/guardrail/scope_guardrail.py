@@ -5,6 +5,8 @@ is within the supported domain before passing it to the agent.
 No second LLM call is made — classification is purely embedding-based.
 """
 
+import re
+
 import numpy as np
 from django.conf import settings
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
@@ -48,3 +50,51 @@ class ScopeGuardrail:
         if denominator == 0:
             return 0.0
         return float(np.dot(a, b) / denominator)
+
+    @classmethod
+    def check(cls, message: str) -> dict:
+        """Check whether a message falls within the supported marketplace scope."""
+        if not isinstance(message, str) or not message.strip():
+            return {
+                "is_in_scope": True,
+                "score": 1.0,
+                "rejection_message": "",
+            }
+
+        try:
+            model = cls._get_embeddings_model()
+            msg_embedding = np.asarray(model.embed_query(message), dtype=np.float32)
+            scope_embeddings = cls._get_scope_embeddings()
+
+            scores = [
+                cls._cosine_similarity(msg_embedding, example_embedding)
+                for example_embedding in scope_embeddings
+            ]
+            max_score = float(max(scores)) if scores else 0.0
+            is_in_scope = max_score >= cls.THRESHOLD
+
+            rejection_message = ""
+            if not is_in_scope:
+                if re.search(r"[\u0600-\u06FF]", message):
+                    rejection_message = (
+                        "أنا هنا للمساعدة في المنتجات المعاد تدويرها والمواد الخام والطلبات والشحن "
+                        "والإرجاع وكل ما يتعلق بمنصة جديد. لا أستطيع المساعدة في أسئلة خارج نطاق المنصة."
+                    )
+                else:
+                    rejection_message = (
+                        "I can help with recycled products, raw materials, orders, shipping, returns, "
+                        "and other topics related to the Jaddid marketplace. I’m not able to help with "
+                        "general questions outside this scope."
+                    )
+
+            return {
+                "is_in_scope": is_in_scope,
+                "score": max_score,
+                "rejection_message": rejection_message,
+            }
+        except Exception:
+            return {
+                "is_in_scope": True,
+                "score": 1.0,
+                "rejection_message": "",
+            }

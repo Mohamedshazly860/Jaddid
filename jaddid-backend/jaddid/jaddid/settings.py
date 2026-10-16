@@ -132,6 +132,9 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
 
@@ -291,3 +294,39 @@ VAPID_ADMIN_EMAIL = "abdelrhmanadnan3@gmail.com"
 STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', )
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', )
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+
+
+#AI Rate Limit settings
+CHAT_RATE_LIMIT_MAX = 20        # requests per window
+CHAT_RATE_LIMIT_WINDOW = 3600  
+CHAT_MAX_CONVERSATIONS_PER_USER = 50
+CHAT_MAX_MESSAGES_PER_CONVERSATION = 100
+
+
+#security logging config
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'security': {
+            'format': '[SECURITY] %(asctime)s %(levelname)s %(message)s %(extra)s',
+        },
+    },
+    'handlers': {
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/security.log',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'ai_assistant.security': {
+            'handlers': ['security_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

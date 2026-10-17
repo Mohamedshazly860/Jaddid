@@ -1,13 +1,16 @@
 import logging
-
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from .models import Conversation, ConversationMessage
 from .serializers import ChatInputSerializer
 from .services import LLMService
+from .guardrail.scope_guardrail import ScopeGuardrail
+from .security.rate_limiter import RateLimiter
+from .security.sanitizer import InputSanitizer, ResponseSanitizer
+from .security.injection_detector import InjectionDetector
+from .security.security_logger import SecurityLogger
 from .guardrail.scope_guardrail import ScopeGuardrail
 
 
@@ -25,59 +28,101 @@ class ChatView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        message = serializer.validated_data['message']
+        raw_message = serializer.validated_data['message']
         conversation_id = serializer.validated_data.get('conversation_id')
 
+
+        #Input Sanitization
+        try:
+            message = InputSanitizer.sanitize(raw_message)
+        except ValueError:
+            return Response({"error": "Invalid message content"}, status=400)
+
+        #Rate Limiting
+        rate_limiter = RateLimiter(request.user)
+        if not rate_limiter.is_allowed():
+            SecurityLogger.log_rate_limit_hit(request.user)
+            return Response({"error": "Too many messages. Please wait before sending more."}, status=429)
+
+
+        #Scope Guardrail
         guardrail_result = ScopeGuardrail.check(message)
         if not guardrail_result['is_in_scope']:
+            SecurityLogger.log_guardrail_rejection(
+                request.user, message, guardrail_result['score']
+            )
             return Response({
                 'response': guardrail_result['rejection_message'],
                 'products': [],
-                'conversation_id': str(conversation_id) if conversation_id else None,
+                'conversation_id': str(conversation_id) if conversation_id else None
             })
 
+        #Injection Detection (Log only because guardrail handles rejection)
+        matched_pattern = InjectionDetector.get_matched_pattern(message)
+        if matched_pattern:
+            SecurityLogger.log_injection_attempt(
+                request.user, message, matched_pattern
+            )
 
 
+
+        #Conversation limits
         if conversation_id:
-            # If a conversation ID is provided, we can retrieve the conversation and its messages
             try:
-                conversation = Conversation.objects.get(id=conversation_id, user=request.user)
+                conversation = Conversation.objects.get(
+                    id=conversation_id,
+                    user=request.user
+                )
             except Conversation.DoesNotExist:
                 conversation = Conversation.objects.create(user=request.user)
         else:
+            conv_count = Conversation.objects.filter(user=request.user).count()
+            if conv_count >= settings.CHAT_MAX_CONVERSATIONS_PER_USER:
+                oldest = Conversation.objects.filter(
+                    user=request.user
+                ).order_by('updated_at').first()
+                if oldest:
+                    oldest.delete()
+                SecurityLogger.log_conversation_limit(request.user)
             conversation = Conversation.objects.create(user=request.user)
 
+        # Check message limit per conversation
+        msg_count = conversation.messages.count()
+        if msg_count >= settings.CHAT_MAX_MESSAGES_PER_CONVERSATION:
+            conversation = Conversation.objects.create(user=request.user)
 
-        history = conversation.get_receent_messages(limit=20)
+        # Load history
+        history = conversation.get_recent_messages(limit=20)
 
-
+        # Call LLM
         try:
             result = LLMService().chat(message=message, history=history)
         except Exception:
-            logger.exception('AI service request failed')
-            return Response(
-                {'error': 'AI service unavailable'},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-        
+            logger.exception("AI service request failed")
+            return Response({"error": "AI service unavailable"}, status=503)
+
+        #Response sanitization
+        sanitized_response, was_leaked = ResponseSanitizer.sanitize(result['response'])
+        if was_leaked:
+            SecurityLogger.log_response_leak(request.user, "system_prompt_leak")
+
+        # Save messages
         ConversationMessage.objects.create(
             conversation=conversation,
             role='user',
             content=message,
-            products=[],
+            products=[]
         )
-
         ConversationMessage.objects.create(
             conversation=conversation,
             role='assistant',
-            content=result['response'],
-            products=result['products'],
+            content=sanitized_response,
+            products=result['products']
         )
-
         conversation.save()
 
-        return Response(
-            {'response': result['response'],
+        return Response({
+            'response': sanitized_response,
             'products': result['products'],
-            'conversation_id': str(conversation.id),}
-        )
+            'conversation_id': str(conversation.id)
+        })

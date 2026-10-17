@@ -42,3 +42,5 @@ issues.txt
 PROFILE_BUG_SOLVED.md
 MATERIALS_UPDATE.md
 jaddid_guide.txt
+
+logs/*.log

@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 from django.contrib.auth import get_user_model
-from django.test import SimpleTestCase, TestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -93,6 +93,14 @@ class ScopeGuardrailTests(SimpleTestCase):
         self.assertEqual(result["rejection_message"], "")
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "guardrail-view-tests",
+        }
+    }
+)
 class ChatGuardrailViewTests(TestCase):
     endpoint = "/api/ai-assistant/chat/"
 

@@ -13,9 +13,13 @@ class Conversation(models.Model):
     class Meta:
         ordering = ["-updated_at"]
 
-    def get_receent_messages(self, limit: int = 20):
+    def get_recent_messages(self, limit: int = 20):
         """Return the most recent messages in the conversation."""
         return self.messages.order_by("-created_at")[:limit][::-1]
+
+    def get_receent_messages(self, limit: int = 20):
+        """Backward-compatible alias for the historical misspelling."""
+        return self.get_recent_messages(limit=limit)
 
     
 

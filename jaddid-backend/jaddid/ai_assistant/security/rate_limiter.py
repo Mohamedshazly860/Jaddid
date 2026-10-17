@@ -1,6 +1,5 @@
 """Redis based per user rate limiter for AI chatbot endpoint"""
 
-import django_redis
 from django.core.cache import cache
 from django.conf import settings
 

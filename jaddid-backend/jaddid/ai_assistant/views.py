@@ -11,7 +11,7 @@ from .security.rate_limiter import RateLimiter
 from .security.sanitizer import InputSanitizer, ResponseSanitizer
 from .security.injection_detector import InjectionDetector
 from .security.security_logger import SecurityLogger
-from .guardrail.scope_guardrail import ScopeGuardrail
+import settings
 
 
 logger = logging.getLogger(__name__)

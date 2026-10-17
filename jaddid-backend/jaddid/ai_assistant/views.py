@@ -11,8 +11,7 @@ from .security.rate_limiter import RateLimiter
 from .security.sanitizer import InputSanitizer, ResponseSanitizer
 from .security.injection_detector import InjectionDetector
 from .security.security_logger import SecurityLogger
-import settings
-
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

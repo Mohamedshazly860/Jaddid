@@ -16,13 +16,16 @@ class RateLimiter:
 
     def is_allowed(self) -> bool:
         """Return True if the user is within the rate limit, and False if exceeded"""
-        current = cache.get(self.cache_key, 0)
-        if current >= self.MAX_REQUESTS:
-            return False
+        try:
+            new_count = cache.incr(self.cache_key)
+            
+            if new_count == 1:
+                cache.expire(self.cache_key, self.WINDOW_SECONDS)
+            
+            return new_count <= self.MAX_REQUESTS
         
-        #Increment with expiry (atomic operation)
-        cache.set(self.cache_key, current + 1, timeout=self.WINDOW_SECONDS)
-        return True
+        except Exception:
+            return True
     
     def get_remaining(self) -> int:
         """Return how many requests the user has left in the current window."""

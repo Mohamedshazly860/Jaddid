@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from django.conf import settings
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+from langchain_cohere import CohereEmbeddings
+
 
 
 class RAGServiceError(Exception):
@@ -19,8 +20,9 @@ class RAGService:
 
     def _get_embeddings(self):
         if RAGService._embeddings is None:
-            RAGService._embeddings = FastEmbedEmbeddings(
-                model_name=settings.EMBEDDING_MODEL
+            RAGService._embeddings =CohereEmbeddings(
+                model=settings.EMBEDDING_MODEL,
+                cohere_api_key=settings.COHERE_API_KEY
             )
         return RAGService._embeddings
 

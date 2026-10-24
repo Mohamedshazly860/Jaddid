@@ -9,8 +9,7 @@ import re
 
 import numpy as np
 from django.conf import settings
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
-
+from langchain_cohere import CohereEmbeddings
 from .scope_examples import IN_SCOPE_EXAMPLES
 
 
@@ -25,9 +24,10 @@ class ScopeGuardrail:
     def _get_embeddings_model(cls):
         """Return the cached FastEmbed embeddings instance for the configured model."""
         if cls._embeddings_model is None:
-            cls._embeddings_model = FastEmbedEmbeddings(
-                model_name=settings.EMBEDDING_MODEL
-            )
+            cls._embeddings_model = CohereEmbeddings(
+            model=settings.EMBEDDING_MODEL,
+            cohere_api_key=settings.COHERE_API_KEY
+        )
         return cls._embeddings_model
 
     @classmethod

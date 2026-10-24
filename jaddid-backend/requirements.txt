@@ -43,6 +43,6 @@ langchain-community==0.3.25
 langchain-text-splitters==0.3.8
 langchain-mongodb==0.6.2
 pymongo==4.10.1
-fastembed==0.4.2
 langgraph==0.2.74
 numpy==1.26.4
+langchain-cohere==0.3.4

@@ -33,10 +33,8 @@ MONGODB_URI = os.getenv('MONGODB_URI')
 MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME')
 MONGODB_COLLECTION = os.getenv('MONGODB_COLLECTION')
 MONGODB_VECTOR_INDEX_NAME = os.getenv('MONGODB_VECTOR_INDEX_NAME', 'vector_index')
-EMBEDDING_MODEL = os.getenv(
-    'EMBEDDING_MODEL',
-    "BAAI/bge-small-en-v1.5",
-)
+COHERE_API_KEY = os.environ.get("COHERE_API_KEY")
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "embed-multilingual-light-v3.0")
 KNOWLEDGE_BASE_DIR = BASE_DIR / 'ai_assistant' / 'knowledge_base'
 
 

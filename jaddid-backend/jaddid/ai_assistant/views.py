@@ -63,8 +63,6 @@ class ChatView(APIView):
                 request.user, message, matched_pattern
             )
 
-
-
         #Conversation limits
         if conversation_id:
             try:

@@ -10,9 +10,17 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import tools_condition
 
 from ..services.llm_service import get_llm
+from ..services.marketplace_vector_service import MarketplaceVectorService
 from ..services.rag_service import RAGService
 from ..services.search_service import ProductSearchService
 from ..tools import SearchItemsInput, _format_results, search_items
+from ..tools.semantic_search_tool import semantic_search_items
+
+
+_TOOL_MAP = {
+    "search_items": search_items,
+    "semantic_search_items": semantic_search_items,
+}
 
 
 class AgentState(TypedDict):
@@ -57,7 +65,9 @@ def execute_tools_and_capture(state: AgentState) -> dict:
     found_products = []
 
     for tool_call in last_message.tool_calls:
-        if tool_call["name"] == "search_items":
+        tool_name = tool_call["name"]
+
+        if tool_name == "search_items":
             try:
                 validated = SearchItemsInput(**tool_call["args"])
                 results = ProductSearchService().search(
@@ -73,15 +83,36 @@ def execute_tools_and_capture(state: AgentState) -> dict:
                 found_products = results
                 formatted = _format_results(results)
             except Exception:
-                results = []
                 formatted = "Unable to search marketplace items right now."
 
-            tool_messages.append(
-                ToolMessage(
-                    content=formatted,
-                    tool_call_id=tool_call["id"],
+        elif tool_name == "semantic_search_items":
+            try:
+                from ..tools.semantic_search_tool import (
+                    SemanticSearchInput,
+                    _format_semantic_results,
                 )
+                validated = SemanticSearchInput(**tool_call["args"])
+                results = MarketplaceVectorService().semantic_search(
+                    query=validated.query,
+                    item_type=validated.item_type,
+                    limit=validated.limit,
+                )
+                formatted = _format_semantic_results(results)
+                for result in results:
+                    result["id"] = result.pop("product_id", None)
+                found_products = results
+            except Exception:
+                formatted = "Unable to perform semantic search right now."
+
+        else:
+            formatted = f"Unknown tool: {tool_name}"
+
+        tool_messages.append(
+            ToolMessage(
+                content=formatted,
+                tool_call_id=tool_call["id"],
             )
+        )
 
     return {
         "messages": tool_messages,
@@ -91,35 +122,40 @@ def execute_tools_and_capture(state: AgentState) -> dict:
 
 def agent(state: AgentState) -> dict:
     """Ask the model either to answer or request a marketplace-tool call."""
-    system_prompt = (
-        """You are Jaddid's AI shopping assistant for a recycling marketplace.
+    system_prompt = """You are Jaddid's friendly AI shopping assistant for a recycling marketplace in Egypt.
 
-        CORE BEHAVIOR — SEARCH FIRST, ASK LATER:
-        - When a user mentions any product or material, search immediately using search_items
-        - Never ask for price, condition, category, or location before searching
-        - Show results first, then offer to refine if needed
-        - Only ask a clarifying question if the user's request is completely ambiguous (e.g. just "hello" with no product intent)
+PERSONALITY:
+- Warm, helpful, and encouraging — like a knowledgeable friend
+- Celebrate sustainability: "Great choice going green!"
+- Be concise but never cold or robotic
+- Use the user's language — respond in Arabic if they write in Arabic, English otherwise
 
-        SEARCH STRATEGY:
-        - Use the user's words directly as the search query
-        - Start with broad searches — do not over-filter on first attempt
-        - If search returns no results, try a broader query before telling the user nothing was found
-        - If results exist, present them and ask if they want to filter by price or condition
+FORMATTING — always use markdown:
+- Use **bold** for product names and prices
+- Use bullet points for listing features or multiple items
+- Keep responses short — one sentence introduction then results
+- Never write walls of text
 
-        RESPONSE STYLE:
-        - Be concise and direct — 1-2 sentences before showing results
-        - Never ask more than one question at a time
-        - Never ask for information you can search without
+TOOL SELECTION:
+- User gives exact product name → use search_items (keyword search)
+- User describes a need, use case, or is vague → use semantic_search_items
+- Keyword search returned nothing → try semantic_search_items automatically
+- User asks about policies, shipping, returns → answer from retrieved context
 
-        KNOWLEDGE BASE:
-        - Use retrieved context to answer policy, shipping, and platform questions
-        - If context was retrieved, answer from it directly without asking follow-up questions
-        """
-    )
+SEARCH BEHAVIOR:
+- Search immediately, never ask for details first
+- If no results found with one tool, try the other automatically
+- Present results warmly: "I found some great options for you! 🌿"
+
+HANDLING UNCERTAIN USERS:
+- "I'm not sure what I need" → use semantic_search_items with their context
+- "Something for..." → use semantic_search_items directly
+- Suggest categories if truly lost: "We have recycled products, raw materials, furniture, plastics, metals..."
+"""
     if state["rag_context"]:
         system_prompt += f"\n\nRetrieved context:\n{state['rag_context']}"
 
-    llm = get_llm().bind_tools([search_items])
+    llm = get_llm().bind_tools([search_items, semantic_search_items])
     response = llm.invoke([SystemMessage(content=system_prompt), *state["messages"]])
     return {"messages": [response]}
 

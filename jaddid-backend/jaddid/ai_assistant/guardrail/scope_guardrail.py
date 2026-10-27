@@ -14,7 +14,7 @@ from .scope_examples import IN_SCOPE_EXAMPLES
 
 
 class ScopeGuardrail:
-    THRESHOLD = 0.45  # documented: permissive to avoid false rejections
+    THRESHOLD = 0.35  # documented: permissive to avoid false rejections
 
     # Class-level cache — computed once, reused across all requests
     _scope_embeddings = None

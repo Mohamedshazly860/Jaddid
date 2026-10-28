@@ -6,8 +6,7 @@ from typing import Literal
 from langchain_core.tools import tool
 from pydantic import BaseModel, ConfigDict, Field
 
-from .services.search_service import ProductSearchService
-
+from ..services.search_service import ProductSearchService
 
 class SearchItemsInput(BaseModel):
     """Validated arguments accepted by :func:`search_items`."""

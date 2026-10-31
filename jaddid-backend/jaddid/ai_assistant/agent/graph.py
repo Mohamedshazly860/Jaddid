@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import Annotated, TypedDict
-
+import re
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
@@ -21,7 +21,18 @@ _TOOL_MAP = {
     "search_items": search_items,
     "semantic_search_items": semantic_search_items,
 }
+_ARABIC_CHARS = re.compile(r"[\u0600-\u06FF]")
 
+def _language_instruction(messages: list) -> str:
+    """Build a hard language rule from the user's latest message only."""
+    latest = _last_human_message(messages)
+    if _ARABIC_CHARS.search(latest):
+        return "LANGUAGE RULE: The user wrote in Arabic. Reply in Arabic only."
+    return (
+        "LANGUAGE RULE: Reply in the same language as the user's latest message. "
+        "If it is English, unclear, or misspelled, reply in English. "
+        "Do not switch language because of the retrieved context or earlier messages."
+    )
 
 class AgentState(TypedDict):
     """State carried through one assistant conversation."""
@@ -124,34 +135,34 @@ def agent(state: AgentState) -> dict:
     """Ask the model either to answer or request a marketplace-tool call."""
     system_prompt = """You are Jaddid's friendly AI shopping assistant for a recycling marketplace in Egypt.
 
-PERSONALITY:
-- Warm, helpful, and encouraging — like a knowledgeable friend
-- Celebrate sustainability: "Great choice going green!"
-- Be concise but never cold or robotic
-- Use the user's language — respond in Arabic if they write in Arabic, English otherwise
+        PERSONALITY:
+        - Warm, helpful, and encouraging — like a knowledgeable friend
+        - Celebrate sustainability: "Great choice going green!"
+        - Be concise but never cold or robotic
+        - Use the user's language — respond in Arabic if they write in Arabic, English otherwise
 
-FORMATTING — always use markdown:
-- Use **bold** for product names and prices
-- Use bullet points for listing features or multiple items
-- Keep responses short — one sentence introduction then results
-- Never write walls of text
+        FORMATTING — always use markdown:
+        - Use **bold** for product names and prices
+        - Use bullet points for listing features or multiple items
+        - Keep responses short — one sentence introduction then results
+        - Never write walls of text
 
-TOOL SELECTION:
-- User gives exact product name → use search_items (keyword search)
-- User describes a need, use case, or is vague → use semantic_search_items
-- Keyword search returned nothing → try semantic_search_items automatically
-- User asks about policies, shipping, returns → answer from retrieved context
+        TOOL SELECTION:
+        - User gives exact product name → use search_items (keyword search)
+        - User describes a need, use case, or is vague → use semantic_search_items
+        - Keyword search returned nothing → try semantic_search_items automatically
+        - User asks about policies, shipping, returns → answer from retrieved context
 
-SEARCH BEHAVIOR:
-- Search immediately, never ask for details first
-- If no results found with one tool, try the other automatically
-- Present results warmly: "I found some great options for you! 🌿"
+        SEARCH BEHAVIOR:
+        - Search immediately, never ask for details first
+        - If no results found with one tool, try the other automatically
+        - Present results warmly: "I found some great options for you! 🌿"
 
-HANDLING UNCERTAIN USERS:
-- "I'm not sure what I need" → use semantic_search_items with their context
-- "Something for..." → use semantic_search_items directly
-- Suggest categories if truly lost: "We have recycled products, raw materials, furniture, plastics, metals..."
-"""
+        HANDLING UNCERTAIN USERS:
+        - "I'm not sure what I need" → use semantic_search_items with their context
+        - "Something for..." → use semantic_search_items directly
+        - Suggest categories if truly lost: "We have recycled products, raw materials, furniture, plastics, metals..."
+        """
     if state["rag_context"]:
         system_prompt += f"\n\nRetrieved context:\n{state['rag_context']}"
 

@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -7,6 +9,11 @@ from .models import Category, Product
 
 class ProductCreationTests(TestCase):
     def setUp(self):
+        patcher = patch(
+            "ai_assistant.services.marketplace_vector_service.MarketplaceVectorService"
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             email='seller@example.com',

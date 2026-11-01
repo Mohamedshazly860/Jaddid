@@ -119,6 +119,16 @@ class ChatViewSecurityTests(TestCase):
     endpoint = "/api/ai-assistant/chat/"
 
     def setUp(self):
+        patcher = patch(
+            "ai_assistant.views.ScopeGuardrail.check",
+            return_value={
+                "is_in_scope": True,
+                "score": 1.0,
+                "rejection_message": "",
+            },
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.client = APIClient()
         self.user = self.user_model.objects.create_user(
             email="security-user@example.com",

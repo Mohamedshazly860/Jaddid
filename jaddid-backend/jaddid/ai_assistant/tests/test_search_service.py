@@ -1,4 +1,5 @@
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -9,6 +10,11 @@ from marketplace.models import Category, Material, MaterialListing, Product
 
 class ProductSearchServiceTests(TestCase):
     def setUp(self):
+        patcher = patch(
+            "ai_assistant.services.marketplace_vector_service.MarketplaceVectorService"
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.seller = get_user_model().objects.create_user(
             email="seller@example.com",
             password="StrongPass123",

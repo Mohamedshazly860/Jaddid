@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -47,6 +48,7 @@ KNOWLEDGE_BASE_DIR = BASE_DIR / 'ai_assistant' / 'knowledge_base'
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
+TESTING = "test" in sys.argv
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 

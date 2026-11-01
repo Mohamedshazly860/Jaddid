@@ -35,6 +35,7 @@ MONGODB_COLLECTION = os.getenv('MONGODB_COLLECTION')
 MONGODB_VECTOR_INDEX_NAME = os.getenv('MONGODB_VECTOR_INDEX_NAME', 'vector_index')
 MONGODB_PRODUCT_COLLECTION = os.environ.get("MONGODB_PRODUCT_COLLECTION", "product_vectors")
 MONGODB_VECTOR_PRODUCT_INDEX = os.environ.get("MONGODB_VECTOR_PRODUCT_INDEX", "product_vector_index")
+SEMANTIC_SEARCH_MIN_SCORE = float(os.environ.get("SEMANTIC_SEARCH_MIN_SCORE", "0.35"))
 COHERE_API_KEY = os.environ.get("COHERE_API_KEY")
 EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "embed-multilingual-light-v3.0")
 KNOWLEDGE_BASE_DIR = BASE_DIR / 'ai_assistant' / 'knowledge_base'

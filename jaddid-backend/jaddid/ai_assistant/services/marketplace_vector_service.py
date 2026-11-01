@@ -12,6 +12,8 @@ from langchain_cohere import CohereEmbeddings
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
+from marketplace.models import MaterialListing, Product
+
 
 logger = logging.getLogger(__name__)
 
@@ -154,36 +156,124 @@ class MarketplaceVectorService:
                     "limit": limit,
                 }
             }
-            pipeline = [vector_stage]
+            pipeline = [
+                vector_stage,
+                {
+                    "$project": {
+                        "_id": 0,
+                        "product_id": 1,
+                        "type": 1,
+                        "score": {"$meta": "vectorSearchScore"},
+                    }
+                },
+                {
+                    "$match": {
+                        "score": {"$gte": settings.SEMANTIC_SEARCH_MIN_SCORE}
+                    }
+                },
+            ]
             if item_type in ("product", "material"):
                 pipeline.append({"$match": {"type": item_type}})
-            pipeline.extend(
-                [
-                    {
-                        "$match": {
-                            "status": "active",
-                            "quantity": {"$gt": 0},
+
+            vector_results = list(self._get_collection().aggregate(pipeline))
+            ordered_results = []
+            seen_ids = set()
+            dropped_ids = []
+            for result in vector_results:
+                item_id = result.get("product_id")
+                if item_id is None:
+                    continue
+
+                item_id = str(item_id)
+                score = result.get("score")
+                if score is not None and score < settings.SEMANTIC_SEARCH_MIN_SCORE:
+                    dropped_ids.append(item_id)
+                    continue
+                if item_id in seen_ids:
+                    dropped_ids.append(item_id)
+                    continue
+
+                seen_ids.add(item_id)
+                ordered_results.append((item_id, result.get("type")))
+
+            product_ids = [
+                item_id
+                for item_id, item_type_name in ordered_results
+                if item_type_name == "product"
+            ]
+            material_ids = [
+                item_id
+                for item_id, item_type_name in ordered_results
+                if item_type_name == "material"
+            ]
+
+            products = {
+                str(product.id): product
+                for product in Product.objects.filter(
+                    id__in=product_ids,
+                    status=Product.ACTIVE,
+                    quantity__gt=0,
+                ).select_related("category")
+            }
+            materials = {
+                str(material.id): material
+                for material in MaterialListing.objects.filter(
+                    id__in=material_ids,
+                    status=MaterialListing.ACTIVE,
+                    quantity__gt=0,
+                ).select_related("material__category")
+            }
+
+            results = []
+            for item_id, item_type_name in ordered_results:
+                if item_type_name == "product":
+                    product = products.get(item_id)
+                    if product is None:
+                        dropped_ids.append(item_id)
+                        continue
+                    results.append(
+                        {
+                            "title": product.title,
+                            "id": str(product.id),
+                            "description": product.description,
+                            "price": str(product.price),
+                            "condition": product.condition,
+                            "quantity": product.quantity,
+                            "location": product.location,
+                            "category": product.category.name,
+                            "type": "product",
                         }
-                    },
-                    {
-                        "$project": {
-                            "_id": 0,
-                            "product_id": 1,
-                            "type": 1,
-                            "title": 1,
-                            "description": 1,
-                            "price": 1,
-                            "price_per_unit": 1,
-                            "unit": 1,
-                            "condition": 1,
-                            "location": 1,
-                            "category": 1,
-                            "material": 1,
+                    )
+                elif item_type_name == "material":
+                    material = materials.get(item_id)
+                    if material is None:
+                        dropped_ids.append(item_id)
+                        continue
+                    results.append(
+                        {
+                            "title": material.title,
+                            "id": str(material.id),
+                            "description": material.description,
+                            "price_per_unit": str(material.price_per_unit),
+                            "unit": material.unit,
+                            "condition": material.condition,
+                            "quantity": material.quantity,
+                            "location": material.location,
+                            "material": material.material.name,
+                            "category": material.material.category.name,
+                            "type": "material",
                         }
-                    },
-                ]
-            )
-            return list(self._get_collection().aggregate(pipeline))
+                    )
+                else:
+                    dropped_ids.append(item_id)
+
+            if dropped_ids:
+                logger.warning(
+                    "Semantic search dropped IDs: %s",
+                    dropped_ids,
+                )
+
+            return results
         except Exception:
             logger.exception("Failed to perform marketplace semantic search")
             return []

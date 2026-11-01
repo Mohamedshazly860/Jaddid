@@ -46,6 +46,25 @@ class Command(BaseCommand):
                 material_failed += 1
                 self.stderr.write(self.style.ERROR(f"Failed: {material.title}"))
 
+        active_ids = {
+            str(item_id)
+            for item_id in Product.objects.filter(
+                status=Product.ACTIVE,
+                quantity__gt=0,
+            ).values_list("id", flat=True)
+        }
+        active_ids.update(
+            str(item_id)
+            for item_id in MaterialListing.objects.filter(
+                status=MaterialListing.ACTIVE,
+                quantity__gt=0,
+            ).values_list("id", flat=True)
+        )
+        orphan_result = service._get_collection().delete_many(
+            {"product_id": {"$nin": list(active_ids)}}
+        )
+        self.stdout.write(f"Removed {orphan_result.deleted_count} orphaned vectors.")
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Done. Products: {product_count} vectorized, {product_failed} failed. "

@@ -109,8 +109,6 @@ def execute_tools_and_capture(state: AgentState) -> dict:
                     limit=validated.limit,
                 )
                 formatted = _format_semantic_results(results)
-                for result in results:
-                    result["id"] = result.pop("product_id", None)
                 found_products = results
             except Exception:
                 formatted = "Unable to perform semantic search right now."

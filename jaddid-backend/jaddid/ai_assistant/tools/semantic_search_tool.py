@@ -35,7 +35,13 @@ def _format_semantic_results(results: list[dict]) -> str:
         return "No items found matching your description."
 
     formatted_results = []
-    for index, item in enumerate(results, start=1):
+    seen_ids = set()
+    for item in results:
+        item_id = item["id"]
+        if item_id in seen_ids:
+            continue
+        seen_ids.add(item_id)
+        index = len(formatted_results) + 1
         if item.get("type") == "product":
             formatted_results.append(
                 "\n".join(

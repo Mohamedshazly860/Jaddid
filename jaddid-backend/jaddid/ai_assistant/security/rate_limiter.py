@@ -33,8 +33,13 @@ class RateLimiter:
             # Fail open if the cache is down, but log it so it's never silent
             logger.exception("Rate limiter unavailable, allowing request")
             return True
+
         
-        def get_remaining(self) -> int:
-            """Return how many requests the user has left in the current window."""
+    def get_remaining(self) -> int:
+        """Return how many requests the user has left in the current window."""
+        try:
             current = cache.get(self.cache_key, 0)
             return max(0, self.MAX_REQUESTS - current)
+        except Exception:
+            logger.exception("Rate limiter unavailable")
+            return self.MAX_REQUESTS

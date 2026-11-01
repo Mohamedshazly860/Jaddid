@@ -41,7 +41,6 @@ def _format_semantic_results(results: list[dict]) -> str:
                 "\n".join(
                     (
                         f"{index}. Product: {item['title']}",
-                        f"   ID: {item.get('product_id')}",
                         f"   Description: {item['description']}",
                         f"   Price: {item['price']}",
                         f"   Condition: {item['condition']}",
@@ -55,7 +54,6 @@ def _format_semantic_results(results: list[dict]) -> str:
                 "\n".join(
                     (
                         f"{index}. Material listing: {item['title']}",
-                        f"   ID: {item.get('product_id')}",
                         f"   Description: {item['description']}",
                         f"   Price per {item['unit']}: {item['price_per_unit']}",
                         f"   Condition: {item['condition']}",

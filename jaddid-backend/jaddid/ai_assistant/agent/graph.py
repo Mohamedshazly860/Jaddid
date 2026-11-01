@@ -139,13 +139,15 @@ def agent(state: AgentState) -> dict:
         - Warm, helpful, and encouraging — like a knowledgeable friend
         - Celebrate sustainability: "Great choice going green!"
         - Be concise but never cold or robotic
-        - Use the user's language — respond in Arabic if they write in Arabic, English otherwise
 
         FORMATTING — always use markdown:
         - Use **bold** for product names and prices
         - Use bullet points for listing features or multiple items
         - Keep responses short — one sentence introduction then results
         - Never write walls of text
+        - Prices are in EGP (Egyptian pounds). Never use any other currency symbol.
+        - Never show product IDs, and never mention internal data issues such as "category may be mislabeled".
+        - Product cards display the details automatically, so introduce the results in one friendly sentence.
 
         TOOL SELECTION:
         - User gives exact product name → use search_items (keyword search)
@@ -165,6 +167,7 @@ def agent(state: AgentState) -> dict:
         """
     if state["rag_context"]:
         system_prompt += f"\n\nRetrieved context:\n{state['rag_context']}"
+    system_prompt += "\n\n" + _language_instruction(state["messages"])
 
     llm = get_llm().bind_tools([search_items, semantic_search_items])
     response = llm.invoke([SystemMessage(content=system_prompt), *state["messages"]])

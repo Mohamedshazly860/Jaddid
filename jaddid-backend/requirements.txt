@@ -8,6 +8,7 @@ django-modeltranslation==0.18.11
 
 # ─── Database ─────────────────────────────────────────────────────────────────
 psycopg2-binary==2.9.11
+dj-database-url==2.3.0
 
 # ─── Static & Media Files ─────────────────────────────────────────────────────
 Pillow==10.4.0

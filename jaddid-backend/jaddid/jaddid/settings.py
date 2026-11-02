@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+import dj_database_url
 
 load_dotenv()
 
@@ -47,10 +48,14 @@ KNOWLEDGE_BASE_DIR = BASE_DIR / 'ai_assistant' / 'knowledge_base'
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 TESTING = "test" in sys.argv
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+def env_list(name, default=''):
+    return [value.strip() for value in os.getenv(name, default).split(',') if value.strip()]
+
+
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 
 
 
@@ -82,6 +87,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -117,19 +123,28 @@ ASGI_APPLICATION = 'jaddid.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-        'OPTIONS': {
-            'connect_timeout': 10,
-        },
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ['DATABASE_URL'],
+            conn_max_age=600,
+        )
     }
-}
+    DATABASES['default'].setdefault('OPTIONS', {})['connect_timeout'] = 10
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'connect_timeout': 10,
+            },
+        }
+    }
 
 CACHES = {
     "default": {
@@ -189,6 +204,11 @@ LANGUAGES = [
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 
 
@@ -203,18 +223,19 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS Settings (for React/Vite frontend)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5174",   # Vite dev server (current)
-    "http://127.0.0.1:5174",   # Vite dev server (IP)
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000",  # React dev server
-    "http://localhost:5173",   # Vite dev server
-    "http://localhost:5178",   # Alternative Vite port
-    "http://127.0.0.1:5173",   # Vite dev server (IP)
-    "http://127.0.0.1:5178",   # Alternative Vite port (IP)
-    "http://localhost:5176",   # Current Vite port
-    "http://127.0.0.1:5176",   # Current Vite port (IP)
-]
+CORS_ALLOWED_ORIGINS = env_list(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,'
+    'http://127.0.0.1:3000,http://localhost:5173,http://localhost:5178,'
+    'http://127.0.0.1:5173,http://127.0.0.1:5178,http://localhost:5176,'
+    'http://127.0.0.1:5176',
+)
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -313,18 +334,13 @@ LOGGING = {
         },
     },
     'handlers': {
-        'security_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/security.log',
-        },
         'console': {
             'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
         'ai_assistant.security': {
-            'handlers': ['security_file', 'console'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },

@@ -61,8 +61,13 @@ def vapid_public_key(request):
     })
 
 
+def health_check(request):
+    return JsonResponse({'status': 'ok'})
+
+
     
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
 
     #Accounts URLs
